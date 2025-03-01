@@ -48,6 +48,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
         TextView albumName;
         public AlbumViewHolder(@NonNull View itemView) {
             super(itemView);
+            albumName = itemView.findViewById(R.id.albumName);
         }
     }
 }
