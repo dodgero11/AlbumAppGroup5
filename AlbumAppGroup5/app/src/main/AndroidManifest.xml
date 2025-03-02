@@ -28,10 +28,5 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.AlbumCollectionFragment" />
-        <activity android:name=".models.AlbumModel" />
-
-        <activity android:name=".activities.ImageDetailActivity"/>
-
     </application>
 </manifest>
