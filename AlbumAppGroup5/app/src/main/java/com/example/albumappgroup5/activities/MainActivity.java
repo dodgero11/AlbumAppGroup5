@@ -15,6 +15,7 @@ import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -78,8 +79,28 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             }
         });
 
+        // Listen for the result when ImageDetailFragment is closed
+        getSupportFragmentManager().setFragmentResultListener("image_detail_closed", this, new FragmentResultListener() {
+            @Override
+            public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+                if (result.getBoolean("refresh_images", false)) {
+                    reloadGalleryView();
+                }
+            }
+        });
+
         checkAndRequestPermissions();
     }
+
+    // Reload images when returning to MainActivity
+    private void reloadGalleryView() {
+        findViewById(R.id.recyclerViewImages).setVisibility(View.VISIBLE);
+        findViewById(R.id.bottom_button_container).setVisibility(View.VISIBLE);
+        findViewById(R.id.fragmentContainer).setVisibility(View.GONE);
+
+        loadImagesFromStorage(); // Refresh images
+    }
+
 
     // Accessing the camera
     private void openCamera() {
@@ -198,13 +219,24 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     // Click on image to go to details
     @Override
     public void onImageClick(int position) {
-        ImageModel image = imageList.get(position);
-        Intent intent = new Intent(this, ImageDetailActivity.class);
-        intent.putExtra("imagePath", image.getImagePath());
-        intent.putExtra("imageName", image.getName());
-        intent.putExtra("fileSize", image.getFileSize());
-        intent.putExtra("dateTaken", image.getDateTaken());
-        startActivity(intent);
+        ImageModel image = imageList.get(position); // Get the clicked image
+
+        ImageDetailFragment imageDetailFragment = ImageDetailFragment.newInstance(
+                image.getImagePath(),
+                image.getName(),
+                image.getFileSize(),
+                image.getDateTaken()
+        );
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, imageDetailFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+
+        // Hide RecyclerView and buttons when showing the detail fragment
+        findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
+        findViewById(R.id.bottom_button_container).setVisibility(View.GONE);
+        findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
     }
 
     // Long click to remove image (only in-app, not yet in internal storage)

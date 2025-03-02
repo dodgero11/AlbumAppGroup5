@@ -25,4 +25,5 @@ public class ImageModel {
     public String getDateTaken() {
         return dateTaken;
     }
+
 }
