@@ -8,9 +8,11 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,19 +24,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnImageClickListener {
-    private static final String ARG_ALBUM_NAME = "albumName";
-    private static final String ARG_IMAGE_LIST = "imageList";
+    static private List<ImageModel> imagesOfAlbum;
+    static private List<ImageModel> allOfImages;
+    static private String nameOfAlbum;
     private TextView albumTitle;
-    private String albumName;
-    private List<String> imagePaths;
     private GalleryAdapter adapter;
     private RecyclerView recyclerView;
-
-    public static AlbumDetailFragment newInstance(String albumName, List<String> imageList) {
+    public static AlbumDetailFragment newInstance(String albumName, List<ImageModel> imageList, List<ImageModel> allImages) {
         AlbumDetailFragment fragment = new AlbumDetailFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_ALBUM_NAME, albumName);
-        args.putStringArrayList(ARG_IMAGE_LIST, new ArrayList<>(imageList)); // Convert to ArrayList
+        nameOfAlbum = albumName;
+        imagesOfAlbum = imageList;
+        allOfImages = allImages;
         fragment.setArguments(args);
         return fragment;
     }
@@ -44,23 +45,24 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_album_detail, container, false);
 
-        if (getArguments() != null) {
-            albumName = getArguments().getString(ARG_ALBUM_NAME);
-            imagePaths = getArguments().getStringArrayList(ARG_IMAGE_LIST);
-        }
-
-        if (imagePaths == null) {
-            imagePaths = new ArrayList<>();
-        }
-
         albumTitle = view.findViewById(R.id.albumTitle);
-        albumTitle.setText(albumName);
+        albumTitle.setText(nameOfAlbum);
 
         recyclerView = view.findViewById(R.id.recyclerViewAlbumImages);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
 
-        adapter = new GalleryAdapter(getContext(), convertToImageModelList(imagePaths), this);
+        adapter = new GalleryAdapter(getContext(), imagesOfAlbum, this);
         recyclerView.setAdapter(adapter);
+
+        // Listen for the result when AddImageFragment is closed
+        getParentFragmentManager().setFragmentResultListener("add_image_result", this, (requestKey, result) -> {
+            ImageModel newImage = result.getParcelable("new_image");
+            if (newImage != null) {
+                imagesOfAlbum.add(newImage);
+                adapter.notifyItemInserted(imagesOfAlbum.size() - 1);
+                Toast.makeText(getContext(), "Image added to album", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // Adding images
         view.findViewById(R.id.btnAddImageToAlbum).setOnClickListener(v -> selectImageForAlbum());
@@ -69,27 +71,37 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
     }
 
     private void selectImageForAlbum() {
-
-    }
-
-    private List<ImageModel> convertToImageModelList(List<String> imagePaths) {
-        List<ImageModel> images = new ArrayList<>();
-        for (String path : imagePaths) {
-            images.add(new ImageModel(path, "Image", 0, "Today"));
-        }
-        return images;
+        AddImageFragment addImageFragment = AddImageFragment.newInstance(allOfImages);
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragmentContainer, addImageFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override
     public void onImageClick(int position) {
         Toast.makeText(getContext(), "Clicked on image at position " + position, Toast.LENGTH_SHORT).show();
-        // To be implemented (Opens activity_image_detail.xml)
+
+        ImageModel image = imagesOfAlbum.get(position); // Get the clicked image
+
+        ImageDetailFragment imageDetailFragment = ImageDetailFragment.newInstance(
+                image.getImagePath(),
+                image.getName(),
+                image.getFileSize(),
+                image.getDateTaken(),
+                "AlbumDetailFragment"
+        );
+
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, imageDetailFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     @Override
     public void onImageLongClick(int position) {
-        Toast.makeText(getContext(), "Long click on image at position " + position, Toast.LENGTH_SHORT).show();
-        // To be implemented (Deletes photo in-app)
+        imagesOfAlbum.remove(position);
+        adapter.notifyItemRemoved(position);
     }
 
     private void showDeleteConfirmationDialog(int position) {
@@ -97,7 +109,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
         builder.setTitle("Delete Image")
                 .setMessage("Are you sure you want to delete this image?")
                 .setPositiveButton("Yes", (dialog, which) -> {
-                    imagePaths.remove(position);
+                    imagesOfAlbum.remove(position);
                     adapter.notifyItemRemoved(position);
 
                     Toast.makeText(getContext(), "Image deleted", Toast.LENGTH_SHORT).show();

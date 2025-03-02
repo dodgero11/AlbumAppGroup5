@@ -21,12 +21,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
+import com.example.albumappgroup5.models.AlbumModel;
 import com.example.albumappgroup5.models.ImageModel;
 
 import java.io.File;
@@ -40,7 +42,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener {
     private static final int REQUEST_STORAGE_PERMISSION = 100;
     private static final int REQUEST_CAMERA_PERMISSION = 101;
-
+    private AlbumModel albumModel;
     private RecyclerView recyclerView;
     private GalleryAdapter adapter;
     private List<ImageModel> imageList;
@@ -63,6 +65,22 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize model for ablums
+        albumModel = new ViewModelProvider(this).get(AlbumModel.class);
+
+        // Sample album list
+        albumModel.addAlbum("Vacation");
+        albumModel.addAlbum("Family");
+        albumModel.addAlbum("Friends");
+        albumModel.addAlbum("Work");
+        albumModel.addAlbum("Memories");
+
+        albumModel.getAlbumImages().put("Vacation", new ArrayList<>());
+        albumModel.getAlbumImages().put("Family", new ArrayList<>());
+        albumModel.getAlbumImages().put("Friends", new ArrayList<>());
+        albumModel.getAlbumImages().put("Work", new ArrayList<>());
+        albumModel.getAlbumImages().put("Memories", new ArrayList<>());
 
         recyclerView = findViewById(R.id.recyclerViewImages);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
@@ -225,7 +243,8 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 image.getImagePath(),
                 image.getName(),
                 image.getFileSize(),
-                image.getDateTaken()
+                image.getDateTaken(),
+                "mainActivity"
         );
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -252,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.bottom_button_container).setVisibility(View.GONE);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, new AlbumCollectionFragment());
+        transaction.replace(R.id.fragmentContainer, AlbumCollectionFragment.newInstance(albumModel, imageList));
         transaction.addToBackStack(null);
         transaction.commit();
 
