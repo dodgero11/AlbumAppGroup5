@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +24,7 @@ import java.util.List;
 public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnImageClickListener {
     private static final String ARG_ALBUM_NAME = "albumName";
     private static final String ARG_IMAGE_LIST = "imageList";
-
+    private TextView albumTitle;
     private String albumName;
     private List<String> imagePaths;
     private GalleryAdapter adapter;
@@ -51,6 +52,9 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
         if (imagePaths == null) {
             imagePaths = new ArrayList<>();
         }
+
+        albumTitle = view.findViewById(R.id.albumTitle);
+        albumTitle.setText(albumName);
 
         recyclerView = view.findViewById(R.id.recyclerViewAlbumImages);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));

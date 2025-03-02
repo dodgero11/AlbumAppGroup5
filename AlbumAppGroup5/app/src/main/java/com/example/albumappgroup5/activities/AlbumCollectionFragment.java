@@ -15,9 +15,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.AlbumAdapter;
+import com.example.albumappgroup5.models.AlbumModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +27,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.OnAlbumClickListener {
-    private List<String> albumList;
-    private Map<String, List<String>> albumImages; // Stores album names & images
-    private AlbumAdapter adapter; // Properly using global adapter
+    private AlbumModel albumModel;
+    private AlbumAdapter adapter; // Using global adapter
     private Button btnAddAlbum;
     boolean backToMain = true;
 
@@ -36,23 +37,28 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_album_collection, container, false);
 
-        // Initialize album data
-        albumList = new ArrayList<>();
-        albumImages = new HashMap<>();
+        // Initialize model for ablums
+        albumModel = new ViewModelProvider(requireActivity()).get(AlbumModel.class);
 
         // Sample album list
-        albumList.add("Vacation");
-        albumList.add("Family");
-        albumList.add("Friends");
-        albumList.add("Work");
-        albumList.add("Memories");
+        albumModel.addAlbum("Vacation");
+        albumModel.addAlbum("Family");
+        albumModel.addAlbum("Friends");
+        albumModel.addAlbum("Work");
+        albumModel.addAlbum("Memories");
+
+        albumModel.getAlbumImages().put("Vacation", new ArrayList<>());
+        albumModel.getAlbumImages().put("Family", new ArrayList<>());
+        albumModel.getAlbumImages().put("Friends", new ArrayList<>());
+        albumModel.getAlbumImages().put("Work", new ArrayList<>());
+        albumModel.getAlbumImages().put("Memories", new ArrayList<>());
 
         // Set up RecyclerView
         RecyclerView recyclerView = view.findViewById(R.id.recyclerViewAlbums);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Initialize adapter
-        adapter = new AlbumAdapter(albumList, this);
+        adapter = new AlbumAdapter(albumModel.getAlbumList(), this);
         recyclerView.setAdapter(adapter);
 
         btnAddAlbum = view.findViewById(R.id.btnAddAlbum);
@@ -77,7 +83,7 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
             if (newAlbumName.isEmpty()) {
                 Toast.makeText(getContext(), "Album name cannot be empty!", Toast.LENGTH_SHORT).show();
-            } else if (albumList.contains(newAlbumName)) {
+            } else if (albumModel.getAlbumList().contains(newAlbumName)) {
                 Toast.makeText(getContext(), "Album already exists!", Toast.LENGTH_SHORT).show();
             } else {
                 createAlbum(newAlbumName);
@@ -91,8 +97,8 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
     // Create new album
     private void createAlbum(String albumName) {
-        albumList.add(albumName);
-        albumImages.put(albumName, new ArrayList<>()); // Initialize album with empty image list
+        albumModel.addAlbum(albumName);
+        albumModel.getAlbumImages().put(albumName, new ArrayList<>());
         adapter.notifyDataSetChanged(); // Update RecyclerView when a new album is added
     }
 
@@ -103,7 +109,7 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
         Toast.makeText(getContext(), "Selected: " + albumName, Toast.LENGTH_SHORT).show();
 
-        List<String> images = albumImages.getOrDefault(albumName, new ArrayList<>()); // Get images for album
+        List<String> images = albumModel.getAlbumImages().getOrDefault(albumName, new ArrayList<>()); // Get images for album
 
         // Pass both album name and image list
         AlbumDetailFragment albumDetailFragment = AlbumDetailFragment.newInstance(albumName, images);
@@ -112,6 +118,13 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
         transaction.replace(R.id.fragmentContainer, albumDetailFragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    // Resume current fragment
+    @Override
+    public void onResume() {
+        super.onResume();
+        backToMain = true; // Reset when returning
     }
 
     // Destroy current fragment and goes back to main
