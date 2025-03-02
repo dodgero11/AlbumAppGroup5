@@ -19,14 +19,16 @@ public class ImageDetailFragment extends Fragment {
     private static final String ARG_IMAGE_NAME = "imageName";
     private static final String ARG_FILE_SIZE = "fileSize";
     private static final String ARG_DATE_TAKEN = "dateTaken";
+    private String cameFrom;
 
-    public static ImageDetailFragment newInstance(String imagePath, String imageName, long fileSize, String dateTaken) {
+    public static ImageDetailFragment newInstance(String imagePath, String imageName, long fileSize, String dateTaken, String cameFrom) {
         ImageDetailFragment fragment = new ImageDetailFragment();
         Bundle args = new Bundle();
         args.putString(ARG_IMAGE_PATH, imagePath);
         args.putString(ARG_IMAGE_NAME, imageName);
         args.putLong(ARG_FILE_SIZE, fileSize);
         args.putString(ARG_DATE_TAKEN, dateTaken);
+        fragment.cameFrom = cameFrom;
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,7 +61,10 @@ public class ImageDetailFragment extends Fragment {
 
         // Send a result back to MainActivity
         Bundle result = new Bundle();
-        result.putBoolean("refresh_images", true);
+
+        // If came from MainActivity, refresh images
+        if (cameFrom.equals("mainActivity"))
+            result.putBoolean("refresh_images", true);
         getParentFragmentManager().setFragmentResult("image_detail_closed", result);
     }
 }

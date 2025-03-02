@@ -16,6 +16,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
     // Listener to check for album clicks
     public interface OnAlbumClickListener {
         void onAlbumClick(String albumName);
+        void onAlbumLongClick(String albumName);
     }
 
     public AlbumAdapter(List<String> albumList, OnAlbumClickListener listener) {
@@ -36,6 +37,14 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
         String albumName = albumList.get(position);
         holder.albumName.setText(albumName);
         holder.itemView.setOnClickListener(v -> listener.onAlbumClick(albumName));
+        holder.itemView.setOnLongClickListener(v -> {
+            if (listener != null) {
+                listener.onAlbumLongClick(albumName);
+                return true; // Return true to indicate the event is handled
+            }
+            return false;
+        });
+
     }
 
     @Override

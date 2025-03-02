@@ -15,43 +15,35 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.AlbumAdapter;
 import com.example.albumappgroup5.models.AlbumModel;
+import com.example.albumappgroup5.models.ImageModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.OnAlbumClickListener {
-    private AlbumModel albumModel;
+
+    static private List<ImageModel> allImages;
+    static private AlbumModel albumModel;
     private AlbumAdapter adapter; // Using global adapter
     private Button btnAddAlbum;
     boolean backToMain = true;
 
+    public static AlbumCollectionFragment newInstance(AlbumModel album, List<ImageModel> images) {
+        AlbumCollectionFragment fragment = new AlbumCollectionFragment();
+        Bundle args = new Bundle();
+        albumModel = album;
+        allImages = images;
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Nullable
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_album_collection, container, false);
-
-        // Initialize model for ablums
-        albumModel = new ViewModelProvider(requireActivity()).get(AlbumModel.class);
-
-        // Sample album list
-        albumModel.addAlbum("Vacation");
-        albumModel.addAlbum("Family");
-        albumModel.addAlbum("Friends");
-        albumModel.addAlbum("Work");
-        albumModel.addAlbum("Memories");
-
-        albumModel.getAlbumImages().put("Vacation", new ArrayList<>());
-        albumModel.getAlbumImages().put("Family", new ArrayList<>());
-        albumModel.getAlbumImages().put("Friends", new ArrayList<>());
-        albumModel.getAlbumImages().put("Work", new ArrayList<>());
-        albumModel.getAlbumImages().put("Memories", new ArrayList<>());
 
         // Set up RecyclerView
         RecyclerView recyclerView = view.findViewById(R.id.recyclerViewAlbums);
@@ -109,15 +101,29 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
         Toast.makeText(getContext(), "Selected: " + albumName, Toast.LENGTH_SHORT).show();
 
-        List<String> images = albumModel.getAlbumImages().getOrDefault(albumName, new ArrayList<>()); // Get images for album
+        List<ImageModel> images = albumModel.getAlbumImages().getOrDefault(albumName, new ArrayList<>()); // Get images for album
 
         // Pass both album name and image list
-        AlbumDetailFragment albumDetailFragment = AlbumDetailFragment.newInstance(albumName, images);
+        AlbumDetailFragment albumDetailFragment = AlbumDetailFragment.newInstance(albumName, images, allImages);
 
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, albumDetailFragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    @Override
+    public void onAlbumLongClick(String albumName) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Delete Album")
+                .setMessage("Are you sure you want to delete this album?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    albumModel.removeAlbum(albumName);
+                    adapter.notifyDataSetChanged();
+                    Toast.makeText(getContext(), "Album deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     // Resume current fragment
