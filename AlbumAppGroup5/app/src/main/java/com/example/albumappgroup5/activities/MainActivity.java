@@ -39,7 +39,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener {
+public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener, ImageActivityCallback {
     private static final int REQUEST_STORAGE_PERMISSION = 100;
     private static final int REQUEST_CAMERA_PERMISSION = 101;
     private AlbumModel albumModel;
@@ -277,5 +277,20 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         // Show the fragment container
         findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void selectOption(int index, String option) {
+        switch (option) // implement later
+        {
+            case "details": // open image details fragment/activity
+                break;
+            case "delete": // delete image
+                break;
+            case "cancel": // close and destroy the options fragment
+                break;
+            default:
+                break;
+        }
     }
 }

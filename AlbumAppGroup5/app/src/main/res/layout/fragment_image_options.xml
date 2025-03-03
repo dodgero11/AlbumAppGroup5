@@ -79,5 +79,7 @@
             android:text="@string/cancel"/>
     </LinearLayout>
 
+    <!-- add more if needed -->
+
 
 </LinearLayout>
