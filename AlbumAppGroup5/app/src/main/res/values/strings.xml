@@ -5,4 +5,13 @@
     <string name="viewDetails">View details</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+
+    <!-- app settings -->
+    <string name="settingsTitle">Settings</string>
+    <string name="appearance">Appearance</string>
+    <string-array name="appearanceOptions">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string name="settingsSave">Save</string>
 </resources>

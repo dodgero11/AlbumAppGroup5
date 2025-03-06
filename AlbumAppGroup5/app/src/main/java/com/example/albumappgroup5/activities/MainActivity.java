@@ -15,6 +15,7 @@ import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -108,6 +109,20 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         });
 
         checkAndRequestPermissions();
+
+        // testing settings
+//        Intent test = new Intent(this, AppSettings.class);
+//        startActivityForResult(test, 0);
+//        startActivityForResult(test, 0);
+
+    }
+
+    //
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0)
+            Log.v("info", "returned: " + resultCode);
     }
 
     // Reload images when returning to MainActivity
