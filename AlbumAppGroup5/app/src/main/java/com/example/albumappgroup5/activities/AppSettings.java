@@ -59,7 +59,6 @@ public class AppSettings extends AppCompatActivity {
                             }
                         })
                         .show();
-//                finish();
             }
         });
 

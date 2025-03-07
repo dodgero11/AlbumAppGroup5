@@ -1,7 +1,9 @@
 package com.example.albumappgroup5.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -16,6 +18,7 @@ import android.view.View;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -110,9 +113,10 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         checkAndRequestPermissions();
 
+        applySettings(); // load settings from previous session (if available)
+
         // testing settings
 //        Intent test = new Intent(this, AppSettings.class);
-//        startActivityForResult(test, 0);
 //        startActivityForResult(test, 0);
 
     }
@@ -121,8 +125,29 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 0)
+        if (requestCode == 0) {
             Log.v("info", "returned: " + resultCode);
+            if (resultCode == RESULT_OK)
+            {
+                applySettings();
+            }
+        }
+    }
+
+    private void applySettings () // read preferences and apply changes
+    {
+        SharedPreferences preferences = getSharedPreferences(Global.SETTINGS, Activity.MODE_PRIVATE);
+        if (preferences == null)
+            return;
+
+        if (preferences.getBoolean(Global.SETTINGS_NIGHT, false))
+        {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else
+        {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     // Reload images when returning to MainActivity
