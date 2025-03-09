@@ -2,6 +2,8 @@ Tasks in progress:
 - Set an image as background - codefulTM
 - Search an image by name - codefulTM
 - Layout for viewing multiple images at the same time (2 or 4) - buggingNewbie
+- Add the ability to refresh when scrolling up - ro11
+- Zoom in/Zoom out in details mode
 
 Tasks completed: 
 - Adding/Removing images to/from albums - ro11
