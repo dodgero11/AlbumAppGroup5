@@ -1,0 +1,85 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:clickable="true"
+        android:id="@+id/detailsOption">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:layout_marginEnd="5dp"
+            android:maxHeight="40dp"
+            android:maxWidth="40dp"
+            android:src="@mipmap/placeholder_image"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/viewDetails"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:clickable="true"
+        android:id="@+id/deleteOption">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:layout_marginEnd="5dp"
+            android:maxHeight="40dp"
+            android:maxWidth="40dp"
+            android:src="@mipmap/placeholder_image"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/delete"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:clickable="true"
+        android:id="@+id/cancelOption">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:layout_marginEnd="5dp"
+            android:maxHeight="40dp"
+            android:maxWidth="40dp"
+            android:src="@mipmap/placeholder_image"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"/>
+    </LinearLayout>
+
+    <!-- add more if needed -->
+
+
+</LinearLayout>

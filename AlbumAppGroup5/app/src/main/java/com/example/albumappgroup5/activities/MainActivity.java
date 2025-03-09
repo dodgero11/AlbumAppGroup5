@@ -1,7 +1,9 @@
 package com.example.albumappgroup5.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -20,6 +22,8 @@ import android.content.ContentValues;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,7 +49,7 @@ import java.util.Locale;
 import java.io.OutputStream;
 import java.io.InputStream;
 
-public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener {
+public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener, ImageActivityCallback {
     private static final int REQUEST_STORAGE_PERMISSION = 100;
     private static final int REQUEST_CAMERA_PERMISSION = 101;
     private AlbumModel albumModel;
@@ -139,6 +143,42 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         });
 
         checkAndRequestPermissions();
+
+        applySettings(); // load settings from previous session (if available)
+
+        // testing settings
+//        Intent test = new Intent(this, AppSettings.class);
+//        startActivityForResult(test, 0);
+
+    }
+
+    //
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0) {
+            Log.v("info", "returned: " + resultCode);
+            if (resultCode == RESULT_OK)
+            {
+                applySettings();
+            }
+        }
+    }
+
+    private void applySettings () // read preferences and apply changes
+    {
+        SharedPreferences preferences = getSharedPreferences(Global.SETTINGS, Activity.MODE_PRIVATE);
+        if (preferences == null)
+            return;
+
+        if (preferences.getBoolean(Global.SETTINGS_NIGHT, false))
+        {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else
+        {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     // Reload images when returning to MainActivity
@@ -314,5 +354,20 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         // Show the fragment container
         findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void selectOption(int index, String option) {
+        switch (option) // implement later
+        {
+            case "details": // open image details fragment/activity
+                break;
+            case "delete": // delete image
+                break;
+            case "cancel": // close and destroy the options fragment
+                break;
+            default:
+                break;
+        }
     }
 }
