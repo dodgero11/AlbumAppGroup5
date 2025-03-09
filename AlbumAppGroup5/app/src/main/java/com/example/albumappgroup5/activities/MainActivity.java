@@ -12,6 +12,11 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 import android.view.View;
+import android.media.MediaScannerConnection;
+
+import android.os.Build;
+
+import android.content.ContentValues;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -20,7 +25,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.io.OutputStream;
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener {
     private static final int REQUEST_STORAGE_PERMISSION = 100;
@@ -49,17 +55,42 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     private Button btnOpenAlbum, btnOpenCamera;
     private String currentPhotoPath;
 
-    // Taking a photo with the camera
+    // Handling the result of the camera intent
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
+            new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK) {
-                    Toast.makeText(this, "Image captured successfully!", Toast.LENGTH_SHORT).show();
-                    loadImagesFromStorage();
+                    Log.d("CAMERA", "Camera result OK");
+
+                    if (currentPhotoPath != null && !currentPhotoPath.isEmpty()) {
+                        Uri photoUri = Uri.parse(currentPhotoPath);
+
+                        try (InputStream inputStream = getContentResolver().openInputStream(photoUri)) {
+                            if (inputStream != null) {
+                                Toast.makeText(this, "Image saved successfully!", Toast.LENGTH_SHORT).show();
+
+                                // Optional: Refresh gallery for immediate visibility
+                                MediaScannerConnection.scanFile(
+                                        this,
+                                        new String[]{photoUri.getPath()},
+                                        new String[]{"image/jpeg"},
+                                        null
+                                );
+                            } else {
+                                Toast.makeText(this, "Image capture failed. Please try again.", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (IOException e) {
+                            Log.e("CAMERA", "Error verifying image file", e);
+                            Toast.makeText(this, "Error accessing saved image.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, "Failed to get photo path.", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(this, "Camera capture failed", Toast.LENGTH_SHORT).show();
+                    Log.d("CAMERA", "Camera operation failed, result code: " + result.getResultCode());
+                    Toast.makeText(this, "Camera operation failed", Toast.LENGTH_SHORT).show();
                 }
             });
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,35 +153,40 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
     // Accessing the camera
     private void openCamera() {
+        Log.d("CAMERA", "Opening camera");
         Toast.makeText(this, "Opening camera", Toast.LENGTH_SHORT).show();
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                Log.e("CAMERA", "Error creating image file", ex);
-            }
 
-            if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".fileprovider", photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                cameraLauncher.launch(takePictureIntent);
-            }
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        // Ensure a camera app is available
+        if (takePictureIntent.resolveActivity(getPackageManager()) == null) {
+            Toast.makeText(this, "No camera app available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create the image file using MediaStore (Recommended for public storage)
+        ContentValues values = new ContentValues();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + ".jpg";
+
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, imageFileName);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+
+        Uri photoURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        if (photoURI != null) {
+            currentPhotoPath = photoURI.toString();  // Store URI as the path
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+            takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION); // Required for write access
+            cameraLauncher.launch(takePictureIntent);
+        } else {
+            Toast.makeText(this, "Error creating image file", Toast.LENGTH_SHORT).show();
+            Log.e("CAMERA", "Error creating image file via MediaStore");
         }
     }
 
-    // Creating images from the photoshoot
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
-
-    // Request permission to get images from internal storage
     private void checkAndRequestPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_STORAGE_PERMISSION);
@@ -158,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             loadImagesFromStorage();
         }
     }
+
 
     // Check for permission request's response
     @Override
