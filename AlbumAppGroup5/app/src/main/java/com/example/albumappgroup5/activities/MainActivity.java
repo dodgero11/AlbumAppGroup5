@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
@@ -42,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.io.OutputStream;
 import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener {
@@ -126,6 +126,21 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             } else {
                 openCamera();
             }
+        });
+
+        // Swipe refresh
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            Log.d("SWIPE_REFRESH", "Refreshing gallery...");
+
+            // Reload gallery data
+            loadImagesFromStorage();
+
+            // Stop the refreshing animation
+            swipeRefreshLayout.setRefreshing(false);
+
+            Toast.makeText(this, "Gallery refreshed!", Toast.LENGTH_SHORT).show();
         });
 
         // Listen for the result when ImageDetailFragment is closed
