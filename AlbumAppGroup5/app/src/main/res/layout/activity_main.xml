@@ -1,50 +1,56 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".activities.MainActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewImages"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipeRefreshLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/activity_main_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="4dp"/>
+        tools:context=".activities.MainActivity">
 
-    <!-- Fragment container -->
-    <FrameLayout
-        android:id="@+id/fragmentContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewImages"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="4dp"/>
+
+        <!-- Fragment container -->
+        <FrameLayout
+            android:id="@+id/fragmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
 
-    <!-- Bottom button container -->
-    <LinearLayout
-        android:id="@+id/bottom_button_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:elevation="4dp">
-
-        <Button
-            android:id="@+id/btnCaptureImage"
+        <!-- Bottom button container -->
+        <LinearLayout
+            android:id="@+id/bottom_button_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Chụp ảnh"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="8dp"/>
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:gravity="center"
+            android:layout_alignParentBottom="true"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:elevation="4dp">
 
-        <Button
-            android:id="@+id/btnOpenAlbum"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Mở Albums"
-            android:textColor="@android:color/white"/>
-    </LinearLayout>
-</RelativeLayout>
+            <Button
+                android:id="@+id/btnCaptureImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Chụp ảnh"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="8dp"/>
+
+            <Button
+                android:id="@+id/btnOpenAlbum"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mở Albums"
+                android:textColor="@android:color/white"/>
+        </LinearLayout>
+    </RelativeLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
