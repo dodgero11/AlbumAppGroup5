@@ -1,0 +1,24 @@
+DB design (draft)
+
+Image (imageID, imageName, description, timeAdded, location)
+  - PK : imageID
+ImageLink (imageID, link) // if doing links to image
+  - PK : imageID
+  - FK : imageID -> Image(imageID)
+// otherwise can have name of image file to lookup here
+Tag (tagID, tagName)
+  - PK : tagID
+ImageTag (imageID, tagID)
+  - PK : imageID, tagID
+  - FK : imageID -> Image(imageID), tagID -> Tag(tagID)
+Album (albumID, albumName)
+  - PK : albumID
+ImageAlbum (imageID, albumID)
+  - PK : imageID, albumID
+  - FK : imageID -> Image(imageID), albumID -> Album(albumID)
+ImagePassword (imageID, password)
+  - PK : imageID
+  - FK : imageID -> Image(imageID)
+AlbumPassword (albumID, password)
+  - PK : albumID
+  - FK : albumID -> Album(albumID)
