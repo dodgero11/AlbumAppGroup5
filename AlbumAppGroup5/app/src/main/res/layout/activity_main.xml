@@ -23,34 +23,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-
-        <!-- Bottom button container -->
-        <LinearLayout
-            android:id="@+id/bottom_button_container"
+        <!-- bottom fragment -->
+        <FrameLayout
+            android:id="@+id/fragmentContainerBottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:gravity="center"
-            android:layout_alignParentBottom="true"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:elevation="4dp">
-
-            <Button
-                android:id="@+id/btnCaptureImage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Chụp ảnh"
-                android:textColor="@android:color/white"
-                android:layout_marginBottom="8dp"/>
-
-            <Button
-                android:id="@+id/btnOpenAlbum"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Mở Albums"
-                android:textColor="@android:color/white"/>
-        </LinearLayout>
+            android:layout_alignParentBottom="true"/>
     </RelativeLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

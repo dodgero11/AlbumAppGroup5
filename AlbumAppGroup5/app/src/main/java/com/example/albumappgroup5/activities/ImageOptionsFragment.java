@@ -17,14 +17,14 @@ import com.example.albumappgroup5.R;
 
 public class ImageOptionsFragment extends Fragment implements OptionsFragmentCallback {
     MainActivity main; // activity this fragment is attached to
-    int itemAffected; // index of the item to apply options to
+    int itemAffected = -1; // index of the item to apply options to
 
-    public static ImageOptionsFragment newInstance(int index) {
-        Bundle args = new Bundle();
-        args.putInt("index", index);
+    public static ImageOptionsFragment newInstance() {
+//        Bundle args = new Bundle();
+//        args.putInt("index", index);
 
         ImageOptionsFragment fragment = new ImageOptionsFragment();
-        fragment.setArguments(args);
+//        fragment.setArguments(args);
         return fragment;
     }
 
@@ -34,13 +34,13 @@ public class ImageOptionsFragment extends Fragment implements OptionsFragmentCal
         main = (MainActivity) getActivity();
         if (main == null)
         {
-            throw new IllegalStateException("Implement ImageActivityCallback for this activity!");
+            throw new IllegalStateException("Fragment not attached to any activity");
         }
-        Bundle args = getArguments();
-        if (args != null)
-            itemAffected = args.getInt("index", -1);
-        else
-            itemAffected = -1;
+//        Bundle args = getArguments();
+//        if (args != null)
+//            itemAffected = args.getInt("index", -1);
+//        else
+//            itemAffected = -1;
     }
 
     @Nullable
