@@ -7,7 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
-import com.example.albumappgroup5.models.ImageDetailsModel;
+import com.example.albumappgroup5.models.AlbumObject;
+import com.example.albumappgroup5.models.ImageDetailsObject;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,6 +32,7 @@ public class DatabaseHandler {
         }
     }
 
+    //-------- Required operations --------//
     public static DatabaseHandler getInstance(Context context) {
         if (instance == null) {
             instance = new DatabaseHandler(context);
@@ -41,6 +43,16 @@ public class DatabaseHandler {
         return instance;
     }
 
+    public void closeDatabase () {
+    /* after closing, a new instance is required to work with database again
+    call when the program is about to exit */
+        if (database != null) {
+            database.close();
+            instance = null;
+        }
+    }
+
+    //-------- Database creation/deletion --------//
     public boolean createDatabase() { // run on first access to db only
     // return true on successful table creation, false if error
         boolean success = true; // return value
@@ -131,9 +143,10 @@ public class DatabaseHandler {
         return success;
     }
 
-    public ImageDetailsModel getImageDetails (String imageID) {
+    //-------- Queries --------//
+    public ImageDetailsObject getImageDetails (String imageID) {
     // return object with image details, null on error AND if image is not found
-        ImageDetailsModel result = null;
+        ImageDetailsObject result = null;
 
         try (Cursor data = database.rawQuery("SELECT imageName, description, timeAdded, location " +
                         "FROM Image " +
@@ -146,7 +159,7 @@ public class DatabaseHandler {
                 long timeAddedString = data.getLong(data.getColumnIndexOrThrow("timeAdded"));
                 String location = data.getString(data.getColumnIndexOrThrow("location"));
 
-                result = new ImageDetailsModel(imageName, description, new Date(timeAddedString * 1000), location);
+                result = new ImageDetailsObject(imageID, imageName, description, new Date(timeAddedString * 1000), location);
             }
         } catch (SQLiteException e) {
             Log.e("error", e.toString());
@@ -161,7 +174,7 @@ public class DatabaseHandler {
     // return list of imageID
         List<String> result = new ArrayList<>();
 
-        try (Cursor data = database.query("ImageAlbum", new String[]{"imageID"}, "albumID = ?", new String[]{String.valueOf(albumID)}, null, null, null)) {
+        try (Cursor data = database.rawQuery("SELECT imageID FROM ImageAlbum WHERE albumID = ?", new String[]{String.valueOf(albumID)})) {
             data.moveToPosition(-1);
             while (data.moveToNext()) {
                 result.add(data.getString(data.getColumnIndexOrThrow("imageID")));
@@ -183,8 +196,9 @@ public class DatabaseHandler {
         List<String> result = new ArrayList<>();
 
         try (Cursor data = database.rawQuery("SELECT Image.imageID " +
-                        "FROM Image, ImageAlbum " +
-                        "WHERE ImageAlbum.albumID = ? AND Image.imageID = ImageAlbum.imageID " +
+                        "FROM Image " +
+                        "INNER JOIN ImageAlbum ON Image.imageID = ImageAlbum.imageID " +
+                        "WHERE ImageAlbum.albumID = ? " +
                         "ORDER BY ? " + (ascending ? "ASC" : "DESC"),
                 new String[]{String.valueOf(albumID), sortCriteria})) {
             data.moveToPosition(-1);
@@ -224,6 +238,21 @@ public class DatabaseHandler {
             else
                 return data.getString(0);
         } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
+    public List<AlbumObject> getAlbums () {
+        List<AlbumObject> result = new ArrayList<>();
+        try (Cursor data = database.rawQuery("SELECT albumID, albumName FROM Album", null)) {
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                result.add(new AlbumObject(data.getInt(0), data.getString(1)));
+            }
+            return result;
+        }
+        catch (SQLiteException e) {
             Log.e("error", e.toString());
             return null;
         }

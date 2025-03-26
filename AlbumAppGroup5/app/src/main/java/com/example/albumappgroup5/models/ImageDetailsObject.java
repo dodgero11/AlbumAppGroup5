@@ -2,13 +2,15 @@ package com.example.albumappgroup5.models;
 
 import java.util.Date;
 
-public class ImageDetailsModel {
+public class ImageDetailsObject {
+    String imageID;
     String imageName;
     String description;
     Date timeAdded;
     String location;
 
-    public ImageDetailsModel (String imageName, String description, Date timeAdded, String location) {
+    public ImageDetailsObject(String imageID, String imageName, String description, Date timeAdded, String location) {
+        this.imageID = imageID;
         this.imageName = imageName;
         this.description = description;
         this.timeAdded = timeAdded;
