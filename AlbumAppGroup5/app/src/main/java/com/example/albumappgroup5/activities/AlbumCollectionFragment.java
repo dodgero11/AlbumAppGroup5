@@ -136,18 +136,12 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     // Destroy current fragment and goes back to main
     @Override
     public void onDestroyView() {
+        Bundle args = new Bundle();
         super.onDestroyView();
 
         if (getActivity() != null && backToMain) {
-            View recyclerViewImages = requireActivity().findViewById(R.id.recyclerViewImages);
-            View bottomButtonContainer = requireActivity().findViewById(R.id.bottom_button_container);
-            View fragmentContainer = requireActivity().findViewById(R.id.fragmentContainer);
-
-            if (recyclerViewImages != null) recyclerViewImages.setVisibility(View.VISIBLE);
-            if (bottomButtonContainer != null) bottomButtonContainer.setVisibility(View.VISIBLE);
-            if (fragmentContainer != null) fragmentContainer.setVisibility(View.GONE);
+            args.putBoolean("refresh_images", true);
+            getParentFragmentManager().setFragmentResult("album_closed", args);
         }
     }
-
-
 }
