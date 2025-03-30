@@ -436,8 +436,10 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         {
             case "OPEN ALBUM":
                 openAlbum();
+                break;
             case "TAKE PHOTO":
                 getCameraPermission();
+                break;
         }
     }
 

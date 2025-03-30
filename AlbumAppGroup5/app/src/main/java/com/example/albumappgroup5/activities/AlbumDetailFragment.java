@@ -71,7 +71,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
     }
 
     private void selectImageForAlbum() {
-        AddImageFragment addImageFragment = AddImageFragment.newInstance(allOfImages);
+        AddImageFragment addImageFragment = AddImageFragment.newInstance(allOfImages, imagesOfAlbum );
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainer, addImageFragment)
                 .addToBackStack(null)

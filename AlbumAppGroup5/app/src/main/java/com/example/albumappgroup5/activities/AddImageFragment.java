@@ -27,12 +27,21 @@ public class AddImageFragment extends Fragment implements GalleryAdapter.OnImage
     private GalleryAdapter adapter;
     private int clickedPosition;
 
-    public static AddImageFragment newInstance(List<ImageModel> allImages) {
+    // albumImages được lấy từ database
+
+    private List<ImageModel> albumImages;
+
+    public static AddImageFragment newInstance(List<ImageModel> allImages, List<ImageModel> albumImages) {
         AddImageFragment fragment = new AddImageFragment();
         Bundle args = new Bundle();
         allOfImages = allImages; // Set image list
         fragment.setArguments(args);
+        fragment.setAlbumImages(albumImages);
         return fragment;
+    }
+
+    public void setAlbumImages(List<ImageModel> albumImages) {
+        this.albumImages = albumImages;
     }
 
     @Nullable
@@ -57,7 +66,7 @@ public class AddImageFragment extends Fragment implements GalleryAdapter.OnImage
 
     @Override
     public void onImageClick(int position) {
-        // Select the image
+        // Chọn ảnh
         selectedImagePath = allOfImages.get(position).getImagePath();
         clickedPosition = position;
         selectedImage.setImageURI(android.net.Uri.parse(selectedImagePath));
@@ -65,17 +74,35 @@ public class AddImageFragment extends Fragment implements GalleryAdapter.OnImage
 
     @Override
     public void onImageLongClick(int position) {
-        // To be implemented (Deletes photo in-app)
+        // Xử lý long click nếu cần (ví dụ: xoá ảnh trong danh sách chọn)
+    }
+
+    // Kiểm tra xem ảnh đã có trong album chưa (so sánh dựa trên đường dẫn)
+    private boolean isImageAlreadyAdded(String imagePath) {
+        if (albumImages != null) {
+            for (ImageModel img : albumImages) {
+                if (img.getImagePath().equals(imagePath)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void addImageToAlbum() {
         if (selectedImagePath != null) {
+            if (isImageAlreadyAdded(selectedImagePath)) {
+                Toast.makeText(getContext(), "Image is already added to the album", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // Nếu ảnh chưa được thêm, truyền ảnh qua Bundle
             Bundle result = new Bundle();
             result.putParcelable("new_image", allOfImages.get(clickedPosition));
             getParentFragmentManager().setFragmentResult("add_image_result", result);
-            getParentFragmentManager().popBackStack(); // Close fragment
+            getParentFragmentManager().popBackStack(); // Đóng fragment
         } else {
             Toast.makeText(getContext(), "Please select an image first", Toast.LENGTH_SHORT).show();
         }
     }
 }
+
