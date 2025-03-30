@@ -17,6 +17,9 @@ public class ImageDetailsObject {
         this.location = location;
     }
 
+    public String getImageID() {
+        return imageID;
+    }
     public String getImageName() {
         return imageName;
     }

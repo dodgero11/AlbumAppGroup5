@@ -1,5 +1,6 @@
 package com.example.albumappgroup5.activities;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -25,6 +26,7 @@ public class DatabaseHandler {
         try {
 //            database = SQLiteDatabase.openDatabase(context.getFilesDir().getPath() + Global.DATABASE_NAME, null, SQLiteDatabase.CREATE_IF_NECESSARY);
             database = context.openOrCreateDatabase(Global.DATABASE_NAME, Context.MODE_PRIVATE, null);
+            database.execSQL("PRAGMA foreign_key = ON");
         }
         catch (SQLiteException e) {
             Log.e("error", "cannot access database, " + e);
@@ -62,7 +64,7 @@ public class DatabaseHandler {
                     "imageID text NOT NULL PRIMARY KEY," + // draft - change to different type if necessary
                     "imageName text," +
                     "description text," +
-                    "timeAdded integer," + // unix time (seconds since 1970-01-01 00:00:00)
+                    "timeAdded integer," + // unix time (milliseconds since 1970-01-01 00:00:00)
                     "location text" +
                     ");");
 
@@ -74,8 +76,8 @@ public class DatabaseHandler {
             database.execSQL("CREATE TABLE IF NOT EXISTS ImageTag (" +
                     "imageID text NOT NULL PRIMARY KEY," +
                     "tagID integer PRIMARY KEY," +
-                    "FOREIGN KEY (imageID) REFERENCES Image(imageID)," +
-                    "FOREIGN KEY (tagID) REFERENCES Tag(tagID)" +
+                    "FOREIGN KEY (imageID) REFERENCES Image(imageID) ON DELETE CASCADE," +
+                    "FOREIGN KEY (tagID) REFERENCES Tag(tagID) ON DELETE CASCADE" +
                     ")");
 
             database.execSQL("CREATE TABLE IF NOT EXISTS Album (" +
@@ -86,20 +88,20 @@ public class DatabaseHandler {
             database.execSQL("CREATE TABLE IF NOT EXISTS ImageAlbum (" +
                     "imageID text NOT NULL PRIMARY KEY," +
                     "albumID integer PRIMARY KEY," +
-                    "FOREIGN KEY (imageID) REFERENCES Image(imageID)," +
-                    "FOREIGN KEY (albumID) REFERENCES Album(albumID)" +
+                    "FOREIGN KEY (imageID) REFERENCES Image(imageID) ON DELETE CASCADE," +
+                    "FOREIGN KEY (albumID) REFERENCES Album(albumID) ON DELETE CASCADE" +
                     ")");
 
             database.execSQL("CREATE TABLE IF NOT EXISTS ImagePassword (" +
                     "imageID text NOT NULL PRIMARY KEY," +
                     "password text NOT NULL," + // password also cannot be empty
-                    "FOREIGN KEY (imageID) REFERENCES Image(imageID)" +
+                    "FOREIGN KEY (imageID) REFERENCES Image(imageID) ON DELETE CASCADE" +
                     ")");
 
             database.execSQL("CREATE TABLE IF NOT EXISTS AlbumPassword (" +
                     "albumID integer PRIMARY KEY," +
                     "password text NOT NULL," + // password also cannot be empty
-                    "FOREIGN KEY (albumID) REFERENCES Album(albumID)" +
+                    "FOREIGN KEY (albumID) REFERENCES Album(albumID) ON DELETE CASCADE" +
                     ")");
 
             database.setTransactionSuccessful();
@@ -159,7 +161,7 @@ public class DatabaseHandler {
                 long timeAddedString = data.getLong(data.getColumnIndexOrThrow("timeAdded"));
                 String location = data.getString(data.getColumnIndexOrThrow("location"));
 
-                result = new ImageDetailsObject(imageID, imageName, description, new Date(timeAddedString * 1000), location);
+                result = new ImageDetailsObject(imageID, imageName, description, new Date(timeAddedString), location);
             }
         } catch (SQLiteException e) {
             Log.e("error", e.toString());
@@ -322,5 +324,125 @@ public class DatabaseHandler {
             Log.e("error", e.toString());
             return null;
         }
+    }
+
+    //-------- Insertions --------//
+
+    public boolean insertImage (String imageID) {
+    // imageID may need to reference image file name
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("imageID", imageID);
+            item.put("timeAdded", System.currentTimeMillis());
+            if (database.insert("Image", "imageName", item) != -1)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+    public boolean insertImage (ImageDetailsObject data) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("imageID", data.getImageID());
+            item.put("imageName", data.getImageName());
+            item.put("description", data.getDescription());
+            item.put("location", data.getLocation());
+            item.put("timeAdded", data.getTimeAdded().getTime());
+            if (database.insert("Image", "imageName", item) != -1)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean insertAlbum (String albumName) {
+    // allowing duplicates name for album for now
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("albumName", albumName);
+            if (database.insert("Album", null, item) != -1)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean insertTag (String tagName) {
+    // do not allow duplicate tag name (case insensitive)
+    // note: sqlite only work correctly with case sensitivity for English characters
+        boolean success = true;
+        database.beginTransaction();
+        try (Cursor check = database.rawQuery("SELECT 1 FROM Tag WHERE tagName LIKE ?", new String[]{tagName})) {
+            if (check.getCount() != 0)
+                success = false;
+            else {
+                ContentValues item = new ContentValues();
+                item.put("tagName", tagName);
+                if (database.insert("Tag", null, item) != -1)
+                    database.setTransactionSuccessful();
+                else
+                    success = false;
+            }
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean addToAlbum (String imageID, int albumID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("imageID", imageID);
+            item.put("albumID", albumID);
+            if (database.insert("ImageAlbum", null, item) != -1)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
     }
 }
