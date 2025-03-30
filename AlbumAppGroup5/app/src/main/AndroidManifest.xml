@@ -45,5 +45,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activities.AppSettings"/>
+
     </application>
 </manifest>

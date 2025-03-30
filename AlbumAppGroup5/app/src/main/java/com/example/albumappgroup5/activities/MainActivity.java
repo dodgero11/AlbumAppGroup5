@@ -1,7 +1,9 @@
 package com.example.albumappgroup5.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -20,6 +22,9 @@ import android.content.ContentValues;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,8 +49,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.io.InputStream;
+import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener {
+public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener, ImageActivityCallback, SimpleMessageCallback {
     private static final int REQUEST_STORAGE_PERMISSION = 100;
     private static final int REQUEST_CAMERA_PERMISSION = 101;
     private AlbumModel albumModel;
@@ -54,6 +60,10 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     private List<ImageModel> imageList;
     private Button btnOpenAlbum, btnOpenCamera;
     private String currentPhotoPath;
+
+    // fragments variable
+    ActionButtonFragment buttonContainer;
+    ImageOptionsFragment imageOptionsFragment;
 
     // Handling the result of the camera intent
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
@@ -97,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize model for ablums
+        // Initialize model for albums
         albumModel = new ViewModelProvider(this).get(AlbumModel.class);
 
         // Sample album list
@@ -116,17 +126,14 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         recyclerView = findViewById(R.id.recyclerViewImages);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
-        btnOpenAlbum = findViewById(R.id.btnOpenAlbum);
-        btnOpenAlbum.setOnClickListener(view -> openAlbum());
+        // fragments
+        buttonContainer = ActionButtonFragment.newInstance();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
+        fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
+        fragmentTransaction.commit();
 
-        btnOpenCamera = findViewById(R.id.btnCaptureImage);
-        btnOpenCamera.setOnClickListener(view -> {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-            } else {
-                openCamera();
-            }
-        });
+        imageOptionsFragment = ImageOptionsFragment.newInstance();
 
         // Swipe refresh
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
@@ -154,12 +161,55 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         });
 
         checkAndRequestPermissions();
+
+        applySettings(); // load settings from previous session (if available)
+
+        // testing settings
+//        Intent test = new Intent(this, AppSettings.class);
+//        startActivityForResult(test, 0);
+
+    }
+
+    //
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0) {
+            Log.v("info", "returned: " + resultCode);
+            if (resultCode == RESULT_OK)
+            {
+                applySettings();
+            }
+        }
+    }
+
+    private void applySettings () // read preferences and apply changes
+    {
+        SharedPreferences preferences = getSharedPreferences(Global.SETTINGS, Activity.MODE_PRIVATE);
+        if (preferences == null)
+            return;
+
+        if (preferences.getBoolean(Global.SETTINGS_NIGHT, false))
+        {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else
+        {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     // Reload images when returning to MainActivity
     private void reloadGalleryView() {
         findViewById(R.id.recyclerViewImages).setVisibility(View.VISIBLE);
-        findViewById(R.id.bottom_button_container).setVisibility(View.VISIBLE);
+//        findViewById(R.id.bottom_button_container).setVisibility(View.VISIBLE);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        if (!fragmentManager.popBackStackImmediate("BUTTON_CONTAINER", 0)) {
+            fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
+            fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
+        }
+        fragmentTransaction.commit();
         findViewById(R.id.fragmentContainer).setVisibility(View.GONE);
 
         loadImagesFromStorage(); // Refresh images
@@ -310,17 +360,34 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
     }
 
-    // Long click to remove image (only in-app, not yet in internal storage)
+    // Long click to open options menu
     @Override
     public void onImageLongClick(int position) {
-        imageList.remove(position);
-        adapter.notifyItemRemoved(position);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        String currentFragment = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1).getName();
+        if (Objects.equals(currentFragment, "IMAGE_OPTIONS"))
+        {
+            imageOptionsFragment.changeIndex(position);
+            return;
+        }
+        if (!fragmentManager.popBackStackImmediate("IMAGE_OPTIONS", 0)) {
+            fragmentTransaction.replace(R.id.fragmentContainerBottom, imageOptionsFragment);
+            fragmentTransaction.addToBackStack("IMAGE_OPTIONS");
+        }
+        fragmentTransaction.commit();
+        imageOptionsFragment.changeIndex(position);
     }
 
     // Go to albums section
     private void openAlbum() {
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
-        findViewById(R.id.bottom_button_container).setVisibility(View.GONE);
+//        findViewById(R.id.bottom_button_container).setVisibility(View.GONE);
+
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.detach(buttonContainer);
+        fragmentTransaction.commit();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, AlbumCollectionFragment.newInstance(albumModel, imageList));
@@ -329,5 +396,49 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         // Show the fragment container
         findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
+    }
+
+    private void getCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        } else {
+            openCamera();
+        }
+    }
+
+    @Override
+    public void selectOption(int index, String option) { // message from option fragment
+        switch (option) // implement later
+        {
+            case "details": // open image details fragment/activity
+                break;
+            case "delete": // delete image
+                Log.v("info", String.valueOf(index));
+                // remove image (only in-app, not yet in internal storage)
+                imageList.remove(index);
+                adapter.notifyItemRemoved(index);
+            case "cancel": // close and destroy the options fragment
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                if (!fragmentManager.popBackStackImmediate("BUTTON_CONTAINER", 0)) {
+                    fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
+                    fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
+                }
+                fragmentTransaction.commit();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void receiveMessage(String message) {
+        switch (message)
+        {
+            case "OPEN ALBUM":
+                openAlbum();
+            case "TAKE PHOTO":
+                getCameraPermission();
+        }
     }
 }

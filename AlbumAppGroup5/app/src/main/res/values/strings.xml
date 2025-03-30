@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">Album App Group 5</string>
+
+    <!-- image options list  -->
+    <string name="viewDetails">View details</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- app settings -->
+    <string name="settingsTitle">Settings</string>
+    <string name="appearance">Appearance</string>
+    <string-array name="appearanceOptions">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string name="settingsSave">Save</string>
+
+    <!-- action buttons -->
+    <string name="actionTakePhoto">Take photo</string>
+    <string name="actionViewAlbums">View albums</string>
 </resources>
