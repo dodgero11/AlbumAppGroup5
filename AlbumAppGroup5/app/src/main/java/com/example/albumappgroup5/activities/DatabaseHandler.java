@@ -199,7 +199,7 @@ public class DatabaseHandler {
                         "FROM Image " +
                         "INNER JOIN ImageAlbum ON Image.imageID = ImageAlbum.imageID " +
                         "WHERE ImageAlbum.albumID = ? " +
-                        "ORDER BY ? " + (ascending ? "ASC" : "DESC"),
+                        "ORDER BY Image.? " + (ascending ? "ASC" : "DESC"),
                 new String[]{String.valueOf(albumID), sortCriteria})) {
             data.moveToPosition(-1);
             while (data.moveToNext()) {
@@ -211,6 +211,72 @@ public class DatabaseHandler {
             return null;
         } catch (IllegalArgumentException e) {
             Log.e("error", "table error, column not found - " + e);
+            return null;
+        }
+    }
+
+    public List<String> getImagesByTag (int tagID) {
+        List<String> result = new ArrayList<>();
+
+        try (Cursor data = database.rawQuery("SELECT imageID FROM ImageTag WHERE tagID = ?",
+                new String[]{String.valueOf(tagID)})) {
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                result.add(data.getString(0));
+            }
+            return result;
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
+    public List<String> getImagesByTag (String tagName) {
+    // return list of imageID, or empty list if tag name not found
+        try (Cursor data = database.rawQuery("SELECT tagID FROM Tag WHERE tagName = ?",
+                new String[]{tagName})) {
+            if (data.moveToFirst()) {
+                return getImagesByTag(data.getInt(0));
+            }
+            return new ArrayList<>(); // empty list
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
+    public List<String> getImagesByTag (int tagID, String sortCriteria, boolean ascending) {
+    /* sortCriteria is column name of Image
+     ascending is sort order (true for ascending, false for descending) */
+        List<String> result = new ArrayList<>();
+
+        try (Cursor data = database.rawQuery("SELECT Tag.imageID " +
+                        "FROM ImageTag " +
+                        "JOIN Image ON Tag.imageID = Image.imageID " +
+                        "WHERE tagID = ? " +
+                        "ORDER BY Image.? " + (ascending ? "ASC" : "DESC"),
+                new String[]{String.valueOf(tagID), sortCriteria})) {
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                result.add(data.getString(0));
+            }
+            return result;
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
+    public List<String> getImagesByTag (String tagName, String sortCriteria, boolean ascending) {
+        // return list of imageID, or empty list if tag name not found
+        try (Cursor data = database.rawQuery("SELECT tagID FROM Tag WHERE tagName = ?",
+                new String[]{tagName})) {
+            if (data.moveToFirst()) {
+                return getImagesByTag(data.getInt(0), sortCriteria, ascending);
+            }
+            return new ArrayList<>(); // empty list
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
             return null;
         }
     }
