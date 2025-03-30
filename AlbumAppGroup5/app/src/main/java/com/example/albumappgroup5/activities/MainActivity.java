@@ -16,8 +16,6 @@ import android.widget.Toast;
 import android.view.View;
 import android.media.MediaScannerConnection;
 
-import android.os.Build;
-
 import android.content.ContentValues;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -160,6 +158,15 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             }
         });
 
+        getSupportFragmentManager().setFragmentResultListener("album_closed", this, new FragmentResultListener() {
+            @Override
+            public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+                if (result.getBoolean("refresh_images", false)) {
+                    reloadGalleryView();
+                }
+            }
+        });
+
         checkAndRequestPermissions();
 
         applySettings(); // load settings from previous session (if available)
@@ -202,18 +209,22 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     // Reload images when returning to MainActivity
     private void reloadGalleryView() {
         findViewById(R.id.recyclerViewImages).setVisibility(View.VISIBLE);
-//        findViewById(R.id.bottom_button_container).setVisibility(View.VISIBLE);
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        if (!fragmentManager.popBackStackImmediate("BUTTON_CONTAINER", 0)) {
-            fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
-            fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
-        }
-        fragmentTransaction.commit();
-        findViewById(R.id.fragmentContainer).setVisibility(View.GONE);
 
-        loadImagesFromStorage(); // Refresh images
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        fragmentManager.popBackStack("BUTTON_CONTAINER", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        buttonContainer = ActionButtonFragment.newInstance();
+        fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
+
+        fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
+        fragmentTransaction.commit();
+
+        loadImagesFromStorage();
     }
+
 
 
     // Accessing the camera
@@ -257,26 +268,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_STORAGE_PERMISSION);
         } else {
             loadImagesFromStorage();
-        }
-    }
-
-
-    // Check for permission request's response
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_STORAGE_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                loadImagesFromStorage();
-            } else {
-                Toast.makeText(this, "Permission Denied! Go to Settings > Apps > YourApp > Permissions to enable.", Toast.LENGTH_LONG).show();
-            }
-        } else if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
-            } else {
-                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 
@@ -382,8 +373,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     // Go to albums section
     private void openAlbum() {
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
-//        findViewById(R.id.bottom_button_container).setVisibility(View.GONE);
-
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.detach(buttonContainer);
@@ -441,4 +430,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 getCameraPermission();
         }
     }
+
+
 }

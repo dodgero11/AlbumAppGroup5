@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <ImageView
+        android:id="@+id/imageViewDetail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="matrix"
+        android:adjustViewBounds="true"
+        android:background="@android:color/black"/>
+
+    <TextView
+        android:id="@+id/textViewImageInfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <ImageView
-            android:id="@+id/imageViewDetail"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:scaleType="fitCenter"/>
-
-        <TextView
-            android:id="@+id/textViewImageInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="8dp"
-            android:textSize="16sp"/>
-    </LinearLayout>
-</ScrollView>
+        android:layout_gravity="bottom"
+        android:padding="16dp"
+        android:background="@android:color/black"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"/>
+</FrameLayout>

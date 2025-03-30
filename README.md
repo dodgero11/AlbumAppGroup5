@@ -1,10 +1,11 @@
 Tasks in progress:
 - Set an image as background - codefulTM
 - Search an image by name - codefulTM
-- Zoom in/Zoom out in details mode - ro11
 - Database queries/operations - buggingNewbie
+- Detect duplicated images - ro11
 
 Tasks completed: 
+- Zoom in/Zoom out in details mode - ro11
 - Adding/Removing images to/from albums - ro11
 - Checking image's details from albums - ro11
 - Add the ability to refresh when scrolling up - ro11
