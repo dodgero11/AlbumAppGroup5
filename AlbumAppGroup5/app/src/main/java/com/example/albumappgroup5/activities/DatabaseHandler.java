@@ -536,5 +536,126 @@ public class DatabaseHandler {
     }
 
     //-------- Deletions --------//
-    
+    // cascade delete should delete connected data on other tables
+    // if not change to manually delete first
+    public boolean deleteImage (String imageID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            if (database.delete("Image", "imageID = ?", new String[]{imageID}) > 0)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean deleteAlbum (int albumID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            if (database.delete("Album", "albumID = ?", new String[]{String.valueOf(albumID)}) > 0)
+                database.setTransactionSuccessful();
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean deleteTag (int tagID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            if (database.delete("Tag", "tagID = ?", new String[]{String.valueOf(tagID)}) > 0)
+                database.setTransactionSuccessful();
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean removeFromAlbum (String imageID, int albumID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            if (database.delete("ImageAlbum", "imageID = ? AND albumID = ?", new String[]{imageID, String.valueOf(albumID)}) > 0)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        } finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean removeTag (String imageID, int tagID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            if (database.delete("ImageTag", "imageID = ? AND tagID = ?", new String[]{imageID, String.valueOf(tagID)}) > 0)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        } finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean deleteImagePassword (String imageID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            if (database.delete("ImagePassword", "imageID = ?", new String[]{imageID}) > 0)
+                database.setTransactionSuccessful();
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean deleteAlbumPassword (int albumID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            if (database.delete("AlbumPassword", "albumID = ?", new String[]{String.valueOf(albumID)}) > 0)
+                database.setTransactionSuccessful();
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
 }
