@@ -490,4 +490,51 @@ public class DatabaseHandler {
         }
         return success;
     }
+
+    public boolean insertImagePassword (String imageID, String password) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("imageID", imageID);
+            item.put("password", password);
+            if (database.insert("ImagePassword", null, item) != -1)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean insertAlbumPassword (int albumID, String password) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("albumID", albumID);
+            item.put("password", password);
+            if (database.insert("AlbumPassword", null, item) != -1)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    //-------- Deletions --------//
+    
 }
