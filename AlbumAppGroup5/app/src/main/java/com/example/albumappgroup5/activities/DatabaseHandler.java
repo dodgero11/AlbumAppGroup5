@@ -445,4 +445,49 @@ public class DatabaseHandler {
         }
         return success;
     }
+
+    public boolean tagImage (String imageID, int tagID) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("imageID", imageID);
+            item.put("tagID", tagID);
+            if (database.insert("ImageTag", null, item) != -1) {
+                database.setTransactionSuccessful();
+            }
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+    public boolean tagImage (String imageID, String tagName) {
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            insertTag(tagName);
+            Cursor id = database.rawQuery("SELECT tagID FROM Tag WHERE tagName LIKE ?", new String[]{tagName});
+            if (id.moveToFirst() && tagImage(imageID, id.getInt(0))) {
+                 database.setTransactionSuccessful();
+            }
+            else
+                success = false;
+            id.close();
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
 }
