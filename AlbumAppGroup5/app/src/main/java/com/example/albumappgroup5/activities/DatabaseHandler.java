@@ -74,8 +74,9 @@ public class DatabaseHandler {
                     ")");
 
             database.execSQL("CREATE TABLE IF NOT EXISTS ImageTag (" +
-                    "imageID text NOT NULL PRIMARY KEY," +
-                    "tagID integer PRIMARY KEY," +
+                    "imageID text NOT NULL," +
+                    "tagID integer," +
+                    "PRIMARY KEY (imageID, tagID)," +
                     "FOREIGN KEY (imageID) REFERENCES Image(imageID) ON DELETE CASCADE," +
                     "FOREIGN KEY (tagID) REFERENCES Tag(tagID) ON DELETE CASCADE" +
                     ")");
@@ -86,8 +87,9 @@ public class DatabaseHandler {
                     ")");
 
             database.execSQL("CREATE TABLE IF NOT EXISTS ImageAlbum (" +
-                    "imageID text NOT NULL PRIMARY KEY," +
-                    "albumID integer PRIMARY KEY," +
+                    "imageID text NOT NULL," +
+                    "albumID integer," +
+                    "PRIMARY KEY (imageID, albumID)," +
                     "FOREIGN KEY (imageID) REFERENCES Image(imageID) ON DELETE CASCADE," +
                     "FOREIGN KEY (albumID) REFERENCES Album(albumID) ON DELETE CASCADE" +
                     ")");
@@ -359,7 +361,10 @@ public class DatabaseHandler {
             item.put("imageName", data.getImageName());
             item.put("description", data.getDescription());
             item.put("location", data.getLocation());
-            item.put("timeAdded", data.getTimeAdded().getTime());
+            if (data.getTimeAdded() != null)
+                item.put("timeAdded", data.getTimeAdded().getTime());
+            else
+                item.put("timeAdded", System.currentTimeMillis());
             if (database.insert("Image", "imageName", item) != -1)
                 database.setTransactionSuccessful();
             else
@@ -377,6 +382,9 @@ public class DatabaseHandler {
 
     public boolean insertAlbum (String albumName) {
     // allowing duplicates name for album for now
+        if (albumName == null || albumName.isEmpty())
+            return false;
+
         boolean success = true;
         database.beginTransaction();
         try {
@@ -400,6 +408,9 @@ public class DatabaseHandler {
     public boolean insertTag (String tagName) {
     // do not allow duplicate tag name (case insensitive)
     // note: sqlite only work correctly with case sensitivity for English characters
+        if (tagName == null || tagName.isEmpty())
+            return false;
+
         boolean success = true;
         database.beginTransaction();
         try (Cursor check = database.rawQuery("SELECT 1 FROM Tag WHERE tagName LIKE ?", new String[]{tagName})) {
@@ -492,6 +503,9 @@ public class DatabaseHandler {
     }
 
     public boolean insertImagePassword (String imageID, String password) {
+        if (password == null || password.isEmpty())
+            return false;
+
         boolean success = true;
         database.beginTransaction();
         try {
@@ -514,6 +528,9 @@ public class DatabaseHandler {
     }
 
     public boolean insertAlbumPassword (int albumID, String password) {
+        if (password == null || password.isEmpty())
+            return false;
+
         boolean success = true;
         database.beginTransaction();
         try {
@@ -608,7 +625,7 @@ public class DatabaseHandler {
         return success;
     }
 
-    public boolean removeTag (String imageID, int tagID) {
+    public boolean removeImageTag (String imageID, int tagID) {
         boolean success = true;
         database.beginTransaction();
         try {
@@ -648,6 +665,132 @@ public class DatabaseHandler {
         try {
             if (database.delete("AlbumPassword", "albumID = ?", new String[]{String.valueOf(albumID)}) > 0)
                 database.setTransactionSuccessful();
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    //-------- Updates --------//
+    public boolean updateImage (ImageDetailsObject image) {
+        if (image.getImageID() == null)
+            return false;
+
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            if (image.getImageName() != null)
+                item.put("imageName", image.getImageName());
+            if (image.getDescription() != null)
+                item.put("description", image.getDescription());
+            if (image.getLocation() != null)
+                item.put("location", image.getLocation());
+            if (database.update("Image", item, "imageID = ?", new String[]{image.getImageID()}) > 0)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean updateAlbum (int albumID, String albumName) {
+        if (albumName == null || albumName.isEmpty())
+            return false;
+
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("albumName", albumName);
+            if (database.update("Album", item, "albumID = ?", new String[]{String.valueOf(albumID)}) > 0)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean updateTag (int tagID, String tagName) {
+        if (tagName == null || tagName.isEmpty())
+            return false;
+
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("tagName", tagName);
+            if (database.update("Tag", item, "tagID = ?", new String[]{String.valueOf(tagID)}) > 0)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean updateImagePassword (String imageID, String password) {
+        if (password == null || password.isEmpty())
+            return false;
+
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("password", password);
+            if (database.update("ImagePassword", item, "imageID = ?", new String[]{imageID}) > 0)
+                database.setTransactionSuccessful();
+            else
+                success = false;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            success = false;
+        }
+        finally {
+            database.endTransaction();
+        }
+        return success;
+    }
+
+    public boolean updateAlbumPassword (int albumID, String password) {
+        if (password == null || password.isEmpty())
+            return false;
+
+        boolean success = true;
+        database.beginTransaction();
+        try {
+            ContentValues item = new ContentValues();
+            item.put("password", password);
+            if (database.update("AlbumPassword", item, "albumID = ?", new String[]{String.valueOf(albumID)}) > 0)
+                database.setTransactionSuccessful();
+            else
+                success = false;
         }
         catch (SQLiteException e) {
             Log.e("error", e.toString());
