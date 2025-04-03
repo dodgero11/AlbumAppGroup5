@@ -39,6 +39,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.AlbumModel;
+import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.example.albumappgroup5.models.ImageModel;
 
 import java.io.File;
@@ -164,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         applySettings(); // load settings from previous session (if available)
 
-        // testing settings
+        // testing settings (use this sample when calling the settings activity)
 //        Intent test = new Intent(this, AppSettings.class);
 //        startActivityForResult(test, 0);
 
@@ -174,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 0) {
+        if (requestCode == 0) { // 0 : the settings activity
             Log.v("info", "returned: " + resultCode);
             if (resultCode == RESULT_OK)
             {
