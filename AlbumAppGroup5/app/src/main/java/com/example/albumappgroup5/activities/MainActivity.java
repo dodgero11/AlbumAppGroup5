@@ -43,10 +43,13 @@ import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.example.albumappgroup5.models.ImageModel;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.io.InputStream;
@@ -59,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     private RecyclerView recyclerView;
     private GalleryAdapter adapter;
     private List<ImageModel> imageList;
-    private Button btnOpenAlbum, btnOpenCamera;
     private String currentPhotoPath;
 
     // fragments variable
@@ -131,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         buttonContainer = ActionButtonFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
-        fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
         fragmentTransaction.commit();
 
         imageOptionsFragment = ImageOptionsFragment.newInstance();
@@ -293,6 +294,8 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 MediaStore.Images.Media.DATE_TAKEN // Date
         };
 
+        HashSet<String> hashSet = new HashSet<>();
+
         Cursor cursor = getContentResolver().query(collection, projection, null, null, MediaStore.Images.Media.DATE_TAKEN + " DESC");
         if (cursor != null) {
             while (cursor.moveToNext()) {
@@ -329,7 +332,15 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                     dateTaken = "Unknown Date";
                 }
 
-                imageList.add(new ImageModel(imagePath, imageName, fileSize, dateTaken));
+                String imageHash = getImageHash(imagePath);
+
+                if (hashSet.contains(imageHash)) {
+                    Log.d("Duplicates", "Duplicate found: " + imagePath);
+                }
+                else {
+                    hashSet.add(imageHash);
+                    imageList.add(new ImageModel(imagePath, imageName, fileSize, dateTaken));
+                }
             }
             cursor.close();
         }
@@ -444,5 +455,26 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         }
     }
 
+    public String getImageHash(String imagePath) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            InputStream is = new FileInputStream(new File(imagePath));
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                digest.update(buffer, 0, read);
+            }
+            is.close();
 
+            byte[] md5Bytes = digest.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte b : md5Bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
