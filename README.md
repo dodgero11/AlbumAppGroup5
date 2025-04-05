@@ -1,9 +1,9 @@
 Tasks in progress:
 - Set an image as background - codefulTM
 - Search an image by name - codefulTM
-- Database queries/operations - buggingNewbie
 - Add tags/name to images - ro11
 - Add search function - ro11
+- move images to local storage - buggingNewbie
 
 Tasks completed: 
 - Detect duplicated images - ro11
@@ -14,3 +14,4 @@ Tasks completed:
 - Image options menu (on long press, contains options to see details, delete, ...) - buggingNewbie
 - Dark / light mode - buggingNewbie
 - (xml files added) Layout for viewing multiple images at the same time (2 or 4) - buggingNewbie
+- Database queries/operations - buggingNewbie
