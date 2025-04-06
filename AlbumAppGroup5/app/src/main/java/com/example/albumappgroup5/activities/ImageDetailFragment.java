@@ -48,19 +48,19 @@ public class ImageDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_image_detail, container, false);
 
         imageView = view.findViewById(R.id.imageViewDetail);
-        TextView textViewInfo = view.findViewById(R.id.textViewImageInfo);
+        TextView largeImageName = view.findViewById(R.id.largeImageName);
         swipeRefreshLayout = getActivity().findViewById(R.id.swipeRefreshLayout);
 
 
         if (getArguments() != null) {
             String imagePath = getArguments().getString(ARG_IMAGE_PATH);
             String imageName = getArguments().getString(ARG_IMAGE_NAME);
-            long fileSize = getArguments().getLong(ARG_FILE_SIZE);
-            String dateTaken = getArguments().getString(ARG_DATE_TAKEN);
+//            long fileSize = getArguments().getLong(ARG_FILE_SIZE);
+//            String dateTaken = getArguments().getString(ARG_DATE_TAKEN);
 
             Glide.with(this).load(imagePath).into(imageView);
-            String info = "Tên: " + imageName + "\nDung lượng: " + fileSize + " bytes\nNgày chụp: " + dateTaken;
-            textViewInfo.setText(info);
+//            String info = "Tên: " + imageName + "\nDung lượng: " + fileSize + " bytes\nNgày chụp: " + dateTaken;
+            largeImageName.setText(imageName);
         }
 
         // Initialize ScaleGestureDetector

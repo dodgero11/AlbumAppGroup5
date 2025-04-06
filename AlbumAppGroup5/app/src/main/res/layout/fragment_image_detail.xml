@@ -4,21 +4,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <TextView
+        android:id="@+id/largeImageName"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="30sp" />
+
     <ImageView
         android:id="@+id/imageViewDetail"
+        android:layout_gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="matrix"
+        android:layout_height="300dp"
+        android:scaleType="fitCenter"
         android:adjustViewBounds="true"
         android:background="@android:color/black"/>
 
-    <TextView
-        android:id="@+id/textViewImageInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:padding="16dp"
-        android:background="@android:color/black"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"/>
+<!--    <TextView-->
+<!--        android:id="@+id/textViewImageInfo"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom"-->
+<!--        android:padding="16dp"-->
+<!--        android:background="@android:color/black"-->
+<!--        android:textColor="@android:color/white"-->
+<!--        android:textSize="16sp"/>-->
 </FrameLayout>
