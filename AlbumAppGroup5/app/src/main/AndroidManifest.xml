@@ -45,6 +45,7 @@
         </activity>
 
         <activity android:name=".activities.AppSettings"/>
+        <activity android:name=".activities.ImageDetailsActivity"/>
 
     </application>
 </manifest>

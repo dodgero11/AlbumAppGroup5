@@ -149,7 +149,7 @@ public class DatabaseHandler {
 
     //-------- Queries --------//
     public ImageDetailsObject getImageDetails (String imageID) {
-    // return object with image details, null on error AND if image is not found
+    // return object with image details, null on error, if image is not found then return object with null values
         ImageDetailsObject result = null;
 
         try (Cursor data = database.rawQuery("SELECT imageName, description, timeAdded, location " +
@@ -163,15 +163,17 @@ public class DatabaseHandler {
                 long timeAddedString = data.getLong(data.getColumnIndexOrThrow("timeAdded"));
                 String location = data.getString(data.getColumnIndexOrThrow("location"));
 
-                result = new ImageDetailsObject(imageID, imageName, description, new Date(timeAddedString), location);
+                return new ImageDetailsObject(imageID, imageName, description, new Date(timeAddedString), location);
             }
         } catch (SQLiteException e) {
             Log.e("error", e.toString());
+            return null;
         } catch (IllegalArgumentException e) {
             Log.e("error", "table error, column not found - " + e);
+            return null;
         }
 
-        return result;
+        return new ImageDetailsObject(imageID, null, null, null, null);
     }
 
     public List<String> getAlbumImages (int albumID) {
