@@ -179,6 +179,17 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 //        Intent test = new Intent(this, AppSettings.class);
 //        startActivityForResult(test, 0);
 
+        database = DatabaseHandler.getInstance(this);
+        // try to create database on first start
+        SharedPreferences databasePreferences = getSharedPreferences(Global.PREFERENCE_DATABASE, MODE_PRIVATE);
+
+        if (!databasePreferences.getBoolean("initialized", false)) {
+            if (database.createDatabase()) {
+                SharedPreferences.Editor editor = databasePreferences.edit();
+                editor.putBoolean("initialized", true);
+                editor.apply();
+            }
+        }
     }
 
     //
