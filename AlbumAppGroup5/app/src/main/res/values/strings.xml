@@ -18,4 +18,20 @@
     <!-- action buttons -->
     <string name="actionTakePhoto">Take photo</string>
     <string name="actionViewAlbums">View albums</string>
+
+    <!-- image details -->
+    <string name="nameLabel">Name</string>
+    <string name="descriptionLabel">Description</string>
+    <string name="tagsLabel">Tags</string>
+    <string name="tagsLabel2">(Tap to remove)</string>
+    <string name="tagAddButton">Add tag</string>
+    <string name="datetimeLabel">Date added</string>
+    <string name="locationLabel">Location taken</string>
+
+    <string name="nameHint">No image name</string>
+    <string name="descriptionHint">No description</string>
+    <string name="tagDefault">No tags</string>
+    <string name="locationHint">No location set</string>
+
+    <string name="updateDetailsButton">Update</string>
 </resources>

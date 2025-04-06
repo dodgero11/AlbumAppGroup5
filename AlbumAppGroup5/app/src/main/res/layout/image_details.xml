@@ -1,0 +1,70 @@
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:stretchColumns="1"
+    android:padding="5dp">
+
+    <TableRow
+        android:layout_weight="1">
+        <TextView android:text="@string/nameLabel" />
+        <EditText
+            android:id="@+id/nameEdit"
+            android:inputType="text"
+            android:hint="@string/nameHint"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_weight="5">
+        <TextView android:text="@string/descriptionLabel" />
+        <EditText
+            android:id="@+id/descriptionEdit"
+            android:inputType="textMultiLine"
+            android:hint="@string/descriptionHint"
+            android:maxLines="5"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_weight="1">
+        <TextView android:text="@string/tagsLabel" />
+        <TextView android:text="@string/tagsLabel2" />
+    </TableRow>
+
+    <TableRow
+        android:layout_weight="5">
+        <ListView
+            android:id="@+id/tagsList" />
+    </TableRow>
+
+    <TableRow>
+        <Button
+            android:id="@+id/tagAddButton"
+            android:text="@string/tagAddButton" />
+        <AutoCompleteTextView
+            android:id="@+id/addTagEdit" />
+    </TableRow>
+
+    <TableRow
+        android:layout_weight="1">
+        <TextView android:text="@string/datetimeLabel" />
+        <TextView
+            android:id="@+id/dateAdded" />
+    </TableRow>
+
+    <TableRow
+        android:layout_weight="1">
+        <TextView android:text="@string/locationLabel" />
+        <EditText
+            android:id="@+id/locationEdit"
+            android:inputType="text"
+            android:hint="@string/locationHint"/>
+    </TableRow>
+
+    <TableRow
+        android:layout_weight="1">
+        <Button
+            android:id="@+id/updateDetailsButton"
+            android:text="@string/updateDetailsButton" />
+    </TableRow>
+</TableLayout>
