@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -20,7 +19,6 @@ import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.ImageModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnImageClickListener {
@@ -84,7 +82,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
 
         ImageModel image = imagesOfAlbum.get(position); // Get the clicked image
 
-        ImageDetailFragment imageDetailFragment = ImageDetailFragment.newInstance(
+        ImageLargeFragment imageLargeFragment = ImageLargeFragment.newInstance(
                 image.getImagePath(),
                 image.getName(),
                 image.getFileSize(),
@@ -93,7 +91,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
         );
 
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, imageDetailFragment);
+        transaction.replace(R.id.fragmentContainer, imageLargeFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }

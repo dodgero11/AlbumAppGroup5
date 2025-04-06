@@ -17,7 +17,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.bumptech.glide.Glide;
 import com.example.albumappgroup5.R;
 
-public class ImageDetailFragment extends Fragment {
+public class ImageLargeFragment extends Fragment {
     private static final String ARG_IMAGE_PATH = "imagePath";
     private static final String ARG_IMAGE_NAME = "imageName";
     private static final String ARG_FILE_SIZE = "fileSize";
@@ -30,8 +30,8 @@ public class ImageDetailFragment extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
 
 
-    public static ImageDetailFragment newInstance(String imagePath, String imageName, long fileSize, String dateTaken, String cameFromOrigin) {
-        ImageDetailFragment fragment = new ImageDetailFragment();
+    public static ImageLargeFragment newInstance(String imagePath, String imageName, long fileSize, String dateTaken, String cameFromOrigin) {
+        ImageLargeFragment fragment = new ImageLargeFragment();
         Bundle args = new Bundle();
         args.putString(ARG_IMAGE_PATH, imagePath);
         args.putString(ARG_IMAGE_NAME, imageName);
@@ -45,7 +45,7 @@ public class ImageDetailFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_image_detail, container, false);
+        View view = inflater.inflate(R.layout.fragment_image_large, container, false);
 
         imageView = view.findViewById(R.id.imageViewDetail);
         TextView largeImageName = view.findViewById(R.id.largeImageName);
