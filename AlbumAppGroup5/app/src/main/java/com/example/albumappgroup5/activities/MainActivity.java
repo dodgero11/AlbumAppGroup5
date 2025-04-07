@@ -68,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     ActionButtonFragment buttonContainer;
     ImageOptionsFragment imageOptionsFragment;
 
+    // database handler
+    DatabaseHandler database;
+
     // Handling the result of the camera intent
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
