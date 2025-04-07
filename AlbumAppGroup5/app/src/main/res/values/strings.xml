@@ -31,6 +31,7 @@
     <string name="nameHint">No image name</string>
     <string name="descriptionHint">No description</string>
     <string name="tagDefault">No tags</string>
+    <string name="dateDefault">No information</string>
     <string name="locationHint">No location set</string>
 
     <string name="updateDetailsButton">Update</string>
