@@ -26,6 +26,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class ImageDetailsActivity extends Activity {
     String imageID;
@@ -41,10 +42,15 @@ public class ImageDetailsActivity extends Activity {
     DatabaseHandler database;
 
     // data variables from database
+    ImageDetailsObject details;
     List<TagObject> tagData;
 
-    // lists to handle tag deletion
+    // lists to handle tag add/delete
     List<Integer> deleteMarked = new ArrayList<>();
+    List<String> addPending = new ArrayList<>();
+
+    // bundle for storing data on pause/resume
+//    Bundle storedData =
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,7 +87,12 @@ public class ImageDetailsActivity extends Activity {
         tagAddButton = findViewById(R.id.tagAddButton);
         updateDetailsButton = findViewById(R.id.updateDetailsButton);
 
-        ImageDetailsObject details = database.getImageDetails(imageID);
+        details = database.getImageDetails(imageID);
+        if (details == null) {
+            Toast.makeText(this, "Error showing image details", Toast.LENGTH_LONG
+            ).show();
+            finish();
+        }
         nameEdit.setText(details.getImageName());
         descriptionEdit.setText(details.getDescription());
         locationEdit.setText(details.getLocation());
@@ -133,5 +144,45 @@ public class ImageDetailsActivity extends Activity {
         }
         tagsList.setAdapter(adapter);
 
+        List<String> availableTags = database.getTagNames();
+        addTagEdit.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice, availableTags));
+
+        tagAddButton.setOnClickListener(v -> {
+            if (addTagEdit.getText().length() != 0) {
+                addPending.add(addTagEdit.getText().toString());
+                Toast.makeText(this, "Tag will be added after choosing UPDATE", Toast.LENGTH_SHORT).show();
+            }
+        });
+        updateDetailsButton.setOnClickListener(v -> updateButtonFunction());
+    }
+
+    void updateButtonFunction () {
+        details.setImageName(nameEdit.getText().length() == 0 ? null : nameEdit.getText().toString());
+        details.setDescription(descriptionEdit.getText().length() == 0 ? null : descriptionEdit.getText().toString());
+        details.setLocation(locationEdit.getText().length() == 0 ? null : locationEdit.getText().toString());
+        if (database.insertImage(details))
+            Toast.makeText(this, "Details updated", Toast.LENGTH_SHORT).show();
+        else {
+            Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        int failure = 0;
+        for (int i : deleteMarked) {
+            if (!database.removeImageTag(imageID, tagData.get(i).getTagID()))
+                failure++;
+        }
+        for (String i : addPending) {
+            if (!database.tagImage(imageID, i))
+                failure++;
+        }
+        if (failure == 0) {
+            Toast.makeText(this, "Tags updated", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(this, String.valueOf(failure) + " tags failed to update", Toast.LENGTH_SHORT).show();
+        }
+
+        finish();
     }
 }

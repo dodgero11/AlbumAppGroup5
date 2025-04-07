@@ -32,4 +32,17 @@ public class ImageDetailsObject {
     public String getLocation() {
         return location;
     }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    public void setTimeAdded(Date timeAdded) {
+        this.timeAdded = timeAdded;
+    }
+    public void setLocation(String location) {
+        this.location = location;
+    }
 }
