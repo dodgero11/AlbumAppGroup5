@@ -34,7 +34,12 @@
     <TableRow
         android:layout_weight="5">
         <GridView
-            android:id="@+id/tagsList" />
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:id="@+id/tagsList"
+            android:numColumns="1"
+            android:stretchMode="columnWidth"
+            android:layout_span="2"/>
     </TableRow>
 
     <TableRow>

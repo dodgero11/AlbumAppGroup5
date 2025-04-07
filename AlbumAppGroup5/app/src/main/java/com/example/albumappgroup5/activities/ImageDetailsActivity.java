@@ -2,8 +2,11 @@ package com.example.albumappgroup5.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -12,6 +15,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.albumappgroup5.R;
@@ -38,6 +42,9 @@ public class ImageDetailsActivity extends Activity {
 
     // data variables from database
     List<TagObject> tagData;
+
+    // lists to handle tag deletion
+    List<Integer> deleteMarked = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -94,13 +101,37 @@ public class ImageDetailsActivity extends Activity {
             for (TagObject item : tagData) {
                 tagNameList.add(item.getTagName());
             }
-            adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tagNameList);
+            adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tagNameList) {
+                @NonNull
+                @Override
+                public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                    View view = super.getView(position, convertView, parent);
+                    try {
+                        if (deleteMarked.contains(position))
+                            view.setBackgroundColor(0xFFFF0000);
+                        else
+                            view.setBackgroundColor(0xC0FFFFFF);
+
+                    }
+                    catch (Exception e) {
+                        Log.e("error", e.toString());
+                    }
+                    return view;
+                }
+            };
+
+            tagsList.setOnItemClickListener((parent, view, position, id) -> {
+                if (deleteMarked.contains(position)) { // uncheck item
+                    deleteMarked.remove((Integer) position);
+                    view.setBackgroundColor(0x00FFFFFF);
+                }
+                else { // check item
+                    deleteMarked.add(position);
+                    view.setBackgroundColor(0xC0FF0000); //// consider changing to match theme later
+                }
+            });
         }
         tagsList.setAdapter(adapter);
-
-        tagsList.setOnItemClickListener((parent, view, position, id) -> {
-            // set item for deletion here
-        });
 
     }
 }
