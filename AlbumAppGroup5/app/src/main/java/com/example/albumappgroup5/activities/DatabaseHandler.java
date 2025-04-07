@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.example.albumappgroup5.models.AlbumObject;
 import com.example.albumappgroup5.models.ImageDetailsObject;
+import com.example.albumappgroup5.models.TagObject;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -282,6 +283,28 @@ public class DatabaseHandler {
             }
             return new ArrayList<>(); // empty list
         } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
+    public List<TagObject> getImageTagList (String imageID) {
+        List<TagObject> result = new ArrayList<>();
+
+        try (Cursor data = database.rawQuery("SELECT Tag.tagID, Tag.tagName " +
+                "FROM Tag " +
+                "JOIN ImageTag ON ImageTag.tagID = Tag.tagID " +
+                "WHERE ImageTag.imageID = ? " +
+                "ORDER BY Tag.TagName ASC",
+                new String[]{imageID}
+                )) {
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                result.add(new TagObject(data.getInt(0), data.getString(1)));
+            }
+            return result;
+        }
+        catch (SQLiteException e) {
             Log.e("error", e.toString());
             return null;
         }
