@@ -368,16 +368,15 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     public void onImageClick(int position) {
         ImageModel image = imageList.get(position); // Get the clicked image
 
-        ImageDetailFragment imageDetailFragment = ImageDetailFragment.newInstance(
+        ImageLargeFragment imageLargeFragment = ImageLargeFragment.newInstance(
                 image.getImagePath(),
                 image.getName(),
                 image.getFileSize(),
                 image.getDateTaken(),
                 "mainActivity"
         );
-
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, imageDetailFragment);
+        transaction.replace(R.id.fragmentContainer, imageLargeFragment);
         transaction.addToBackStack(null);
         transaction.commit();
 
@@ -392,6 +391,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     public void onImageLongClick(int position) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        Log.d("info", fragmentManager.getBackStackEntryCount() + "");
         String currentFragment = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1).getName();
         if (Objects.equals(currentFragment, "IMAGE_OPTIONS"))
         {
