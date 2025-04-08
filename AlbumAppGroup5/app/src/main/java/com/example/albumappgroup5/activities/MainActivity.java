@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     private AlbumModel albumModel;
     private RecyclerView recyclerView;
     private GalleryAdapter adapter;
-    private List<ImageModel> imageList;
+    private List<ImageDetailsObject> imageList;
     private String currentPhotoPath;
 
     // fragments variable
@@ -113,7 +113,18 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize model for albums
+        database = DatabaseHandler.getInstance(this);
+
+        // try to create database on first start
+        SharedPreferences databasePreferences = getSharedPreferences(Global.PREFERENCE_DATABASE, MODE_PRIVATE);
+        if (!databasePreferences.getBoolean("initialized", false)) {
+            if (database.createDatabase()) {
+                SharedPreferences.Editor editor = databasePreferences.edit();
+                editor.putBoolean("initialized", true);
+                editor.apply();
+            }
+        }
+
         albumModel = new ViewModelProvider(this).get(AlbumModel.class);
 
         recyclerView = findViewById(R.id.recyclerViewImages);
@@ -169,18 +180,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         // testing settings (use this sample when calling the settings activity)
 //        Intent test = new Intent(this, AppSettings.class);
 //        startActivityForResult(test, 0);
-
-        database = DatabaseHandler.getInstance(this);
-        // try to create database on first start
-        SharedPreferences databasePreferences = getSharedPreferences(Global.PREFERENCE_DATABASE, MODE_PRIVATE);
-
-        if (!databasePreferences.getBoolean("initialized", false)) {
-            if (database.createDatabase()) {
-                SharedPreferences.Editor editor = databasePreferences.edit();
-                editor.putBoolean("initialized", true);
-                editor.apply();
-            }
-        }
     }
 
     @Override
@@ -230,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         buttonContainer = ActionButtonFragment.newInstance();
+        findViewById(R.id.fragmentContainerBottom).setVisibility(View.VISIBLE);
         fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
 
         fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
@@ -244,7 +244,14 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         // Make sure to show the main UI elements (RecyclerView and the bottom container).
         findViewById(R.id.recyclerViewImages).setVisibility(View.VISIBLE);
-        findViewById(R.id.bottom_button_container).setVisibility(View.VISIBLE);
+
+        // Create the button container fragment again.
+        buttonContainer = ActionButtonFragment.newInstance();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
+        fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
+        fragmentTransaction.commit();
+
         // Optionally hide the fragment container if it overlaps.
         findViewById(R.id.fragmentContainer).setVisibility(View.GONE);
     }
@@ -321,33 +328,32 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 String imageName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
                 long fileSize = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE));
 
-                // Find photo's date taken or downloaded
-                String dateTaken = null;
+                Date timeAddedDate = null;
                 int dateAddedIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATE_ADDED);
                 int dataIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
 
+                // Use DATE_ADDED (in seconds) if available
                 if (dateAddedIndex != -1) {
                     long dateAdded = cursor.getLong(dateAddedIndex);
                     if (dateAdded > 0) {
-                        dateTaken = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date(dateAdded * 1000L));
+                        timeAddedDate = new Date(dateAdded * 1000L);
                     }
                 }
 
-                // If DATE_ADDED is missing, fallback to file last modified date
-                if ((dateTaken == null || dateTaken.equals("0")) && dataIndex != -1) {
+                // Fallback: if DATE_ADDED is missing, use file's last modified date
+                if (timeAddedDate == null && dataIndex != -1) {
                     String filePath = cursor.getString(dataIndex);
                     if (filePath != null) {
                         File file = new File(filePath);
                         if (file.exists()) {
-                            long lastModified = file.lastModified();
-                            dateTaken = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date(lastModified));
+                            timeAddedDate = new Date(file.lastModified());
                         }
                     }
                 }
 
-                // Everything failed, resorts to placeholder
-                if (dateTaken == null || dateTaken.equals("0")) {
-                    dateTaken = "Unknown Date";
+                // If both methods fail, default to current time
+                if (timeAddedDate == null) {
+                    timeAddedDate = new Date();
                 }
 
                 String imageHash = getImageHash(imagePath);
@@ -357,7 +363,14 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 }
                 else {
                     hashSet.add(imageHash);
-                    imageList.add(new ImageModel(imagePath, imageName, fileSize, dateTaken));
+                    ImageDetailsObject tempImage = new ImageDetailsObject(imagePath, imageName, null, timeAddedDate, imagePath);
+                    imageList.add(tempImage);
+                    try {
+                        database.insertImage(tempImage);
+                    }
+                    catch (Exception e) {
+                        Log.e("error", e.toString());
+                    }
                 }
             }
             cursor.close();
@@ -370,18 +383,15 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     // Click on image to go to details
     @Override
     public void onImageClick(int position) {
-        ImageModel image = imageList.get(position); // Get the clicked image
+        ImageDetailsObject image = imageList.get(position); // Get the clicked image
 
         ImageLargeFragment imageLargeFragment = ImageLargeFragment.newInstance(
-                image.getImagePath(),
-                image.getName(),
-                image.getFileSize(),
-                image.getDateTaken(),
+                image.getImageID(),
                 "mainActivity"
         );
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, imageLargeFragment);
-        transaction.addToBackStack(null);
+        transaction.addToBackStack("IMAGE_LARGE");
         transaction.commit();
 
         // Hide RecyclerView and buttons when showing the detail fragment
@@ -420,7 +430,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.detach(buttonContainer);
         fragmentTransaction.commit();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -446,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         {
             case "details": // open image details fragment/activity
                 Intent detailsActivity = new Intent(this, ImageDetailsActivity.class);
-                detailsActivity.putExtra("imageID", imageList.get(index).getImagePath());
+                detailsActivity.putExtra("imageID", imageList.get(index).getImageID());
                 startActivity(detailsActivity);
                 break;
             case "delete": // delete image
