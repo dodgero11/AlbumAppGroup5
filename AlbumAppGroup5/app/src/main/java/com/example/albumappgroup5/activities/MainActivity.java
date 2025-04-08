@@ -249,6 +249,21 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.fragmentContainer).setVisibility(View.GONE);
     }
 
+    private void imageSearch() {
+        findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.commit();
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, ImageSearchFragment.newInstance());
+        transaction.addToBackStack(null);
+        transaction.commit();
+
+        // Show the fragment container
+        findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
+    }
+
     // Accessing the camera
     private void openCamera() {
         Log.d("CAMERA", "Opening camera");
@@ -482,6 +497,9 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 break;
             case "RETURN HOME":
                 returnHome();
+                break;
+            case "SEARCH IMAGE":
+                imageSearch();
                 break;
         }
     }

@@ -149,6 +149,32 @@ public class DatabaseHandler {
     }
 
     //-------- Queries --------//
+    public List<ImageDetailsObject> getAllImages () {
+        // Get all images in the database
+        List<ImageDetailsObject> images = new ArrayList<>();
+        String query = "SELECT imageID, imageName, description, timeAdded, location FROM Image";
+
+        try (Cursor cursor = database.rawQuery(query, null)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    String id = cursor.getString(cursor.getColumnIndexOrThrow("imageID"));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow("imageName"));
+                    String description = cursor.getString(cursor.getColumnIndexOrThrow("description"));
+                    long timeAddedMillis = cursor.getLong(cursor.getColumnIndexOrThrow("timeAdded"));
+                    // Convert the stored time (assuming it was saved as millis) into a Date object.
+                    Date timeAdded = new Date(timeAddedMillis);
+                    String location = cursor.getString(cursor.getColumnIndexOrThrow("location"));
+
+                    ImageDetailsObject imageDetails = new ImageDetailsObject(id, name, description, timeAdded, location);
+                    images.add(imageDetails);
+                } while (cursor.moveToNext());
+            }
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+        }
+        return images;
+    }
+
     public ImageDetailsObject getImageDetails (String imageID) {
     // return object with image details, null on error, if image is not found then return object with null values
         ImageDetailsObject result = null;
