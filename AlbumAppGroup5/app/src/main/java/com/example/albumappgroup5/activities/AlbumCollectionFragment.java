@@ -51,6 +51,7 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
         // Initialize adapter
         adapter = new AlbumAdapter(albumModel.getAlbumList(), this);
+        adapter.setAlbumModel(albumModel);
         recyclerView.setAdapter(adapter);
 
         btnAddAlbum = view.findViewById(R.id.btnAddAlbum);
