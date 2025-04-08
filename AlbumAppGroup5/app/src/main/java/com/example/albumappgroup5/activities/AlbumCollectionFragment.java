@@ -1,6 +1,8 @@
 package com.example.albumappgroup5.activities;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.EditText;
 import android.os.Bundle;
@@ -113,8 +115,19 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
             for (AlbumObject album : tempAlbumList) {
                 albumModel.addAlbum(album);
             }
+            loadAlbumThumbnailsFromPrefs();
         } catch (Exception e) {
             Log.e("error", e.toString());
+        }
+    }
+    private void loadAlbumThumbnailsFromPrefs() {
+        SharedPreferences sharedPref = getContext().getSharedPreferences("AlbumPreferences", Context.MODE_PRIVATE);
+        // Duyệt qua danh sách album có trong AlbumModel
+        for (AlbumObject album : albumModel.getAlbumList()) {
+            String thumbnail = sharedPref.getString("thumbnail_" + album.getAlbumName(), null);
+            if (thumbnail != null) {
+                albumModel.setAlbumThumbnail(album.getAlbumName(), thumbnail);
+            }
         }
     }
 
@@ -152,6 +165,11 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                 .show();
     }
+    public String loadThumbnail(String albumName) {
+        SharedPreferences sharedPref = getContext().getSharedPreferences("AlbumPreferences", Context.MODE_PRIVATE);
+        return sharedPref.getString("thumbnail_" + albumName, null);
+    }
+
 
     // Resume current fragment
     @Override
