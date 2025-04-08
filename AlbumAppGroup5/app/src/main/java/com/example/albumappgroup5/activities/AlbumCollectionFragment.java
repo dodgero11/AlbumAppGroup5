@@ -50,6 +50,7 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_album_collection, container, false);
         database = DatabaseHandler.getInstance(getContext());
+
         // Set up RecyclerView
         RecyclerView recyclerView = view.findViewById(R.id.recyclerViewAlbums);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -59,7 +60,7 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
         Log.d("AlbumCollectionFragment", "Albums: " + albumModel);
         // Initialize adapter
-        adapter = new AlbumAdapter(albumModel.getAlbumList(), this);
+        adapter = new AlbumAdapter(albumModel, this);
 
         adapter.setAlbumModel(albumModel);
         recyclerView.setAdapter(adapter);
@@ -108,9 +109,11 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
     private void getAlbumsFromDatabase() {
         try {
-            List<AlbumObject> tempAlbumList = database.getAlbums();
             albumModel.clearAlbumList();
+            List<AlbumObject> tempAlbumList = database.getAlbums();
             for (AlbumObject album : tempAlbumList) {
+                // Add images from database to albums
+                albumModel.addImageToAlbum(album.getAlbumName(), database.getAlbumDetailedImages(album.getAlbumID()));
                 albumModel.addAlbum(album);
             }
         } catch (Exception e) {
@@ -122,8 +125,6 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     public void onAlbumClick(String albumName) {
         // Check if user is going back to main
         backToMain = false;
-
-        Toast.makeText(getContext(), "Selected: " + albumName, Toast.LENGTH_SHORT).show();
 
         List<ImageDetailsObject> images = albumModel.getAlbumImages().getOrDefault(albumName, new ArrayList<>()); // Get images for album
 
@@ -147,7 +148,6 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
                         albumModel.removeAlbum(albumModel.getAlbumByName(album));
                     }
                     adapter.notifyDataSetChanged();
-                    Toast.makeText(getContext(), "Album deleted", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                 .show();

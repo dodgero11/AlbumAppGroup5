@@ -17,6 +17,7 @@ import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.example.albumappgroup5.models.ImageModel;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class ImageSearchFragment extends Fragment {
@@ -113,6 +114,10 @@ public class ImageSearchFragment extends Fragment {
                 }
             }
         }
+        // Remove duplicates in imageIDs
+        imageIDs = new ArrayList<>(new HashSet<>(imageIDs));
+
+        // Check for duplicates before adding to filteredImages
         for (String imageID : imageIDs) {
             filteredImages.add(database.getImageDetails(imageID));
         }

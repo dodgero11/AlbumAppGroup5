@@ -1,75 +1,149 @@
-<TableLayout
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:stretchColumns="1"
     android:padding="5dp">
 
-    <TableRow
-        android:layout_weight="1">
-        <TextView android:text="@string/nameLabel" />
+    <!-- Row 1: Name -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:padding="4dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nameLabel" />
         <EditText
             android:id="@+id/nameEdit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:inputType="text"
             android:hint="@string/nameHint"/>
-    </TableRow>
+    </LinearLayout>
 
-    <TableRow
-        android:layout_weight="5">
-        <TextView android:text="@string/descriptionLabel" />
+    <!-- Row 2: Description -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="horizontal"
+        android:padding="4dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/descriptionLabel" />
         <EditText
             android:id="@+id/descriptionEdit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:inputType="textMultiLine"
             android:hint="@string/descriptionHint"
             android:maxLines="5"/>
-    </TableRow>
+    </LinearLayout>
 
-    <TableRow
-        android:layout_weight="1">
-        <TextView android:text="@string/tagsLabel" />
-        <TextView android:text="@string/tagsLabel2" />
-    </TableRow>
+    <!-- Row 3: Tags Labels -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:padding="4dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tagsLabel"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tagsLabel2"/>
+    </LinearLayout>
 
-    <TableRow
-        android:layout_weight="5">
-        <GridView
-            android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:id="@+id/tagsList"
-            android:numColumns="3"
-            android:stretchMode="columnWidth"
-            android:layout_span="2"/>
-    </TableRow>
+    <!-- Row 4: GridView for Tags -->
+    <GridView
+        android:id="@+id/tagsList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:numColumns="3"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="4dp"
+        android:horizontalSpacing="4dp"/>
 
-    <TableRow>
+    <!-- Row 5: Add Tag -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:padding="4dp">
         <Button
             android:id="@+id/tagAddButton"
-            android:text="@string/tagAddButton" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tagAddButton"/>
         <AutoCompleteTextView
-            android:id="@+id/addTagEdit" />
-    </TableRow>
+            android:id="@+id/addTagEdit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+    </LinearLayout>
 
-    <TableRow
-        android:layout_weight="1">
-        <TextView android:text="@string/datetimeLabel" />
+    <!-- Row 6: Date/Time -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:padding="4dp">
         <TextView
-            android:id="@+id/dateAdded" />
-    </TableRow>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Date added: " />
+        <TextView
+            android:id="@+id/dateAdded"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+    </LinearLayout>
 
-    <TableRow
-        android:layout_weight="1">
-        <TextView android:text="@string/locationLabel" />
+    <!-- Row 7: Location -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:padding="4dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/locationLabel" />
         <EditText
             android:id="@+id/locationEdit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:inputType="text"
             android:hint="@string/locationHint"/>
-    </TableRow>
+    </LinearLayout>
 
-    <TableRow
-        android:layout_weight="1">
+    <!-- Row 8: Update Details Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="4dp">
         <Button
             android:id="@+id/updateDetailsButton"
-            android:text="@string/updateDetailsButton" />
-    </TableRow>
-</TableLayout>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/updateDetailsButton"/>
+    </LinearLayout>
+
+</LinearLayout>

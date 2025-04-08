@@ -26,12 +26,25 @@ public class AlbumModel extends ViewModel {
         }
     }
 
+    public void addImageToAlbum(String albumName, List<ImageDetailsObject> images) {
+        if (albumImages.containsKey(albumName)) {
+            albumImages.get(albumName).addAll(images);
+        }
+    }
+
     public Map<String, List<ImageDetailsObject>> getAlbumImages() {
         return albumImages;
     }
 
     public List<AlbumObject> getAlbumList() {
         return albumList;
+    }
+
+    public AlbumObject getAlbumByPosition(int position) {
+        if (position >= 0 && position < albumList.size()) {
+            return albumList.get(position);
+        }
+        return null;
     }
 
     public AlbumObject getAlbumByName(String albumName) {
