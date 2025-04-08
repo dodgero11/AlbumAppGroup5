@@ -2,6 +2,7 @@ package com.example.albumappgroup5.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.models.ImageDetailsObject;
@@ -28,7 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class ImageDetailsActivity extends Activity {
+public class ImageDetailsActivity extends AppCompatActivity {
     String imageID;
 
     // view variables
@@ -127,9 +130,9 @@ public class ImageDetailsActivity extends Activity {
                     View view = super.getView(position, convertView, parent);
                     try {
                         if (deleteMarked.contains(position))
-                            view.setBackgroundColor(0xFFFF0000);
+                            view.setBackgroundColor(0xC0FF0000);
                         else
-                            view.setBackgroundColor(0xC0FFFFFF);
+                            view.setBackgroundColor(0x00FFFFFF);
 
                     }
                     catch (Exception e) {
