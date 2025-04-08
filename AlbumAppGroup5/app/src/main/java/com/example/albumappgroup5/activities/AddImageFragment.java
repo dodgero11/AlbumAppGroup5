@@ -18,10 +18,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
+import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.example.albumappgroup5.models.ImageModel;
 
 public class AddImageFragment extends Fragment implements GalleryAdapter.OnImageClickListener {
-    private static List<ImageModel> allOfImages;
+    private static List<ImageDetailsObject> allOfImages;
     private ImageView selectedImage;
     private String selectedImagePath;
     private GalleryAdapter adapter;
@@ -29,9 +30,9 @@ public class AddImageFragment extends Fragment implements GalleryAdapter.OnImage
 
     // albumImages được lấy từ database
 
-    private List<ImageModel> albumImages;
+    private List<ImageDetailsObject> albumImages;
 
-    public static AddImageFragment newInstance(List<ImageModel> allImages, List<ImageModel> albumImages) {
+    public static AddImageFragment newInstance(List<ImageDetailsObject> allImages, List<ImageDetailsObject> albumImages) {
         AddImageFragment fragment = new AddImageFragment();
         Bundle args = new Bundle();
         allOfImages = allImages; // Set image list
@@ -40,7 +41,7 @@ public class AddImageFragment extends Fragment implements GalleryAdapter.OnImage
         return fragment;
     }
 
-    public void setAlbumImages(List<ImageModel> albumImages) {
+    public void setAlbumImages(List<ImageDetailsObject> albumImages) {
         this.albumImages = albumImages;
     }
 
@@ -67,7 +68,7 @@ public class AddImageFragment extends Fragment implements GalleryAdapter.OnImage
     @Override
     public void onImageClick(int position) {
         // Chọn ảnh
-        selectedImagePath = allOfImages.get(position).getImagePath();
+        selectedImagePath = allOfImages.get(position).getImageID();
         clickedPosition = position;
         selectedImage.setImageURI(android.net.Uri.parse(selectedImagePath));
     }
@@ -80,8 +81,8 @@ public class AddImageFragment extends Fragment implements GalleryAdapter.OnImage
     // Kiểm tra xem ảnh đã có trong album chưa (so sánh dựa trên đường dẫn)
     private boolean isImageAlreadyAdded(String imagePath) {
         if (albumImages != null) {
-            for (ImageModel img : albumImages) {
-                if (img.getImagePath().equals(imagePath)) {
+            for (ImageDetailsObject img : albumImages) {
+                if (img.getImageID().equals(imagePath)) {
                     return true;
                 }
             }

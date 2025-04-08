@@ -11,21 +11,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.models.AlbumModel;
+import com.example.albumappgroup5.models.AlbumObject;
+import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.example.albumappgroup5.models.ImageModel;
 
 import java.util.List;
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHolder> {
-    private List<String> albumList;
+    private List<AlbumObject> albumList;
     private OnAlbumClickListener listener;
     private AlbumModel albumModel; // Thêm model chứa ảnh để truy cập danh sách ảnh của mỗi album
 
     public interface OnAlbumClickListener {
-        void onAlbumClick(String albumName);
-        void onAlbumLongClick(String albumName);
+        void onAlbumClick(String albumObject);
+        void onAlbumLongClick(String albumObject);
     }
 
-    public AlbumAdapter(List<String> albumList, OnAlbumClickListener listener) {
+    public AlbumAdapter(List<AlbumObject> albumList, OnAlbumClickListener listener) {
         this.albumList = albumList;
         this.listener = listener;
     }
@@ -44,10 +46,10 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
 
     @Override
     public void onBindViewHolder(@NonNull AlbumViewHolder holder, int position) {
-        String albumName = albumList.get(position);
-        holder.albumName.setText(albumName);
+        AlbumObject albumObject = albumList.get(position);
+        holder.albumObject.setText(albumObject.getAlbumName());
 
-        String selectedThumbnail = albumModel.getAlbumThumbnail(albumName);
+        String selectedThumbnail = albumModel.getAlbumThumbnail(albumObject.getAlbumName());
 
         if (selectedThumbnail != null) {
             // Người dùng đã chọn thumbnail
@@ -57,9 +59,9 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
                     .into(holder.albumThumbnail);
         } else {
             // Nếu chưa có thumbnail → chọn ảnh đầu tiên nếu có
-            List<ImageModel> images = albumModel.getAlbumImages().get(albumName);
+            List<ImageDetailsObject> images = albumModel.getAlbumImages().get(albumObject);
             if (images != null && !images.isEmpty()) {
-                String imagePath = images.get(0).getImagePath();
+                String imagePath = images.get(0).getImageID();
                 Glide.with(holder.itemView.getContext())
                         .load(imagePath)
                         .placeholder(R.drawable.default_album_cover)
@@ -70,10 +72,10 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
         }
 
 
-        holder.itemView.setOnClickListener(v -> listener.onAlbumClick(albumName));
+        holder.itemView.setOnClickListener(v -> listener.onAlbumClick(albumObject.getAlbumName()));
         holder.itemView.setOnLongClickListener(v -> {
             if (listener != null) {
-                listener.onAlbumLongClick(albumName);
+                listener.onAlbumLongClick(albumObject.getAlbumName());
                 return true;
             }
             return false;
@@ -86,12 +88,12 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
     }
 
     static class AlbumViewHolder extends RecyclerView.ViewHolder {
-        TextView albumName;
+        TextView albumObject;
         ImageView albumThumbnail;
 
         public AlbumViewHolder(@NonNull View itemView) {
             super(itemView);
-            albumName = itemView.findViewById(R.id.albumName);
+            albumObject = itemView.findViewById(R.id.albumName);
             albumThumbnail = itemView.findViewById(R.id.albumThumbnail); // ImageView để hiển thị thumbnail
         }
     }

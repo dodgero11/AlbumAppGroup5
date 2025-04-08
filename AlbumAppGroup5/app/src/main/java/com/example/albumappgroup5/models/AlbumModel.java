@@ -7,35 +7,50 @@ import java.util.List;
 import java.util.Map;
 
 public class AlbumModel extends ViewModel {
-    private List<String> albumList = new ArrayList<>();
-    private Map<String, List<ImageModel>> albumImages = new HashMap<>();
-
-    public List<String> getAlbumList() {
-        return albumList;
-    }
-
-    public Map<String, List<ImageModel>> getAlbumImages() {
-        return albumImages;
-    }
+    private List<AlbumObject> albumList = new ArrayList<>();
+    private Map<String, List<ImageDetailsObject>> albumImages = new HashMap<>();
     private Map<String, String> albumThumbnails = new HashMap<>();
-    public void addAlbum(String albumName) {
-        if (!albumList.contains(albumName)) {
-            albumList.add(albumName);
-            albumImages.put(albumName, new ArrayList<>());
+
+
+    public void addAlbum(AlbumObject album) {
+        if (!albumList.contains(album)) {
+            albumList.add(album);
+            albumImages.put(album.getAlbumName(), new ArrayList<>());
         }
     }
 
-    public void removeAlbum(String albumName) {
+    public void removeAlbum(AlbumObject albumName) {
         if (albumList.contains(albumName)) {
             albumList.remove(albumName);
             albumImages.remove(albumName);
         }
     }
+
+    public Map<String, List<ImageDetailsObject>> getAlbumImages() {
+        return albumImages;
+    }
+
+    public List<AlbumObject> getAlbumList() {
+        return albumList;
+    }
+
+    public AlbumObject getAlbumByName(String albumName) {
+        for (AlbumObject album : albumList) {
+            if (album.getAlbumName().equals(albumName)) {
+                return album;
+            }
+        }
+        return null;
+    }
+
     public void setAlbumThumbnail(String albumName, String imagePath) {
         albumThumbnails.put(albumName, imagePath);
     }
-
     public String getAlbumThumbnail(String albumName) {
         return albumThumbnails.getOrDefault(albumName, null);
+    }
+
+    public void clearAlbumList() {
+        albumList.clear();
     }
 }

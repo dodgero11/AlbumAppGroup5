@@ -207,6 +207,15 @@ public class DatabaseHandler {
         }
     }
 
+    public int getAlbumID (String albumName) {
+        try (Cursor data = database.rawQuery("SELECT albumID FROM Album WHERE albumName = ?", new String[]{albumName})) {
+            if (data.moveToFirst()) {
+                return data.getInt(0);
+            }
+        }
+        return -1;
+    }
+
     public List<String> getAlbumImages (int albumID) {
     // return list of imageID
         List<String> result = new ArrayList<>();
@@ -513,10 +522,23 @@ public class DatabaseHandler {
             ContentValues item = new ContentValues();
             item.put("imageID", imageID);
             item.put("albumID", albumID);
-            if (database.insert("ImageAlbum", null, item) != -1)
+
+            long result = database.insert("ImageAlbum", null, item);
+            Log.d("Database", "Insert result: " + result);
+            if (result != -1) {
                 database.setTransactionSuccessful();
-            else
+                success = true;
+            } else {
+                Log.e("Database", "Insert failed, result is -1");
                 success = false;
+            }
+
+            if (database.insert("ImageAlbum", null, item) != -1) {
+                database.setTransactionSuccessful();
+            }
+            else {
+                success = false;
+            }
         }
         catch (SQLiteException e) {
             Log.e("error", e.toString());

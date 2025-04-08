@@ -2,6 +2,7 @@ package com.example.albumappgroup5.activities;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,20 +19,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
+import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.example.albumappgroup5.models.ImageModel;
 import com.example.albumappgroup5.models.AlbumModel;
 
 import java.util.List;
 
 public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnImageClickListener {
-    static private List<ImageModel> imagesOfAlbum;
-    static private List<ImageModel> allOfImages;
+    static private List<ImageDetailsObject> imagesOfAlbum;
+    static private List<ImageDetailsObject> allOfImages;
     static private String nameOfAlbum;
     private TextView albumTitle;
     private GalleryAdapter adapter;
     private RecyclerView recyclerView;
     private DatabaseHandler database;
-    public static AlbumDetailFragment newInstance(String albumName, List<ImageModel> imageList, List<ImageModel> allImages) {
+    public static AlbumDetailFragment newInstance(String albumName, List<ImageDetailsObject> imageList, List<ImageDetailsObject> allImages) {
         AlbumDetailFragment fragment = new AlbumDetailFragment();
         Bundle args = new Bundle();
         nameOfAlbum = albumName;
@@ -45,6 +47,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_album_detail, container, false);
+        database = DatabaseHandler.getInstance(getContext());
 
         albumTitle = view.findViewById(R.id.albumTitle);
         albumTitle.setText(nameOfAlbum);
@@ -55,11 +58,15 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
         adapter = new GalleryAdapter(getContext(), imagesOfAlbum, this);
         recyclerView.setAdapter(adapter);
 
+        // Get images from database
+        getImagesFromAlbum();
+
         // Listen for the result when AddImageFragment is closed
         getParentFragmentManager().setFragmentResultListener("add_image_result", this, (requestKey, result) -> {
-            ImageModel newImage = result.getParcelable("new_image");
+            ImageDetailsObject newImage = result.getParcelable("new_image");
             if (newImage != null) {
                 imagesOfAlbum.add(newImage);
+                database.addToAlbum(newImage.getImageID(), database.getAlbumID(nameOfAlbum));
                 adapter.notifyItemInserted(imagesOfAlbum.size() - 1);
                 Toast.makeText(getContext(), "Image added to album", Toast.LENGTH_SHORT).show();
             }
@@ -78,29 +85,43 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
                 .commit();
     }
 
+    private void getImagesFromAlbum() {
+        try {
+            List<String> tempImageList = database.getAlbumImages(database.getAlbumID(nameOfAlbum));
+            imagesOfAlbum.clear();
+            for (String image : tempImageList) {
+                ImageDetailsObject tempObject = new ImageDetailsObject(image);
+                imagesOfAlbum.add(tempObject);
+            }
+        } catch (Exception e) {
+            Log.e("error", e.toString());
+        }
+    }
+
     @Override
     public void onImageClick(int position) {
         Toast.makeText(getContext(), "Clicked on image at position " + position, Toast.LENGTH_SHORT).show();
 
-        ImageModel image = imagesOfAlbum.get(position); // Get the clicked image
+        ImageDetailsObject image = imagesOfAlbum.get(position); // Get the clicked image
 
         ImageLargeFragment imageLargeFragment = ImageLargeFragment.newInstance(
-                image.getImagePath(),
-                image.getName(),
-                image.getFileSize(),
-                image.getDateTaken(),
+                image.getImageID(),
                 "AlbumDetailFragment"
         );
 
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, imageLargeFragment);
-        transaction.addToBackStack(null);
+        transaction.addToBackStack("IMAGE_LARGE");
         transaction.commit();
+
+        if (getActivity() != null) {
+            getActivity().findViewById(R.id.fragmentContainerBottom).setVisibility(View.GONE);
+        }
     }
 
     @Override
     public void onImageLongClick(int position) {
-        ImageModel selectedImage = imagesOfAlbum.get(position);
+        ImageDetailsObject selectedImage = imagesOfAlbum.get(position);
 
         new AlertDialog.Builder(getContext())
                 .setTitle("Tùy chọn ảnh")
@@ -108,7 +129,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
                     switch (which) {
                         case 0: // Set as album thumbnail
                             AlbumModel albumModel = new ViewModelProvider(requireActivity()).get(AlbumModel.class);
-                            albumModel.setAlbumThumbnail(nameOfAlbum, selectedImage.getImagePath());
+                            albumModel.setAlbumThumbnail(nameOfAlbum, selectedImage.getImageID());
                             Toast.makeText(getContext(), "Đã đặt ảnh đại diện cho album", Toast.LENGTH_SHORT).show();
                             break;
 
@@ -134,5 +155,14 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
                 })
                 .setNegativeButton("No", null)
                 .show();
+    }
+
+    // Resume current fragment
+    @Override
+    public void onResume() {
+        if (getActivity() != null) {
+            getActivity().findViewById(R.id.fragmentContainerBottom).setVisibility(View.VISIBLE);
+        }
+        super.onResume();
     }
 }

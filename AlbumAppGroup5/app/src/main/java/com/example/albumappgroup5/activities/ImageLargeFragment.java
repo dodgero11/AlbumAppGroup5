@@ -18,27 +18,24 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
 import com.example.albumappgroup5.R;
+import com.example.albumappgroup5.models.ImageDetailsObject;
+
+import java.util.Date;
 
 public class ImageLargeFragment extends Fragment {
-    private static final String ARG_IMAGE_PATH = "imagePath";
-    private static final String ARG_IMAGE_NAME = "imageName";
-    private static final String ARG_FILE_SIZE = "fileSize";
-    private static final String ARG_DATE_TAKEN = "dateTaken";
-
+    private static String imageID;
     private ImageView imageView;
     private ScaleGestureDetector scaleGestureDetector;
     private Matrix matrix = new Matrix();
     private float scaleFactor = 1.0f;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private DatabaseHandler database;
 
 
-    public static ImageLargeFragment newInstance(String imagePath, String imageName, long fileSize, String dateTaken, String cameFromOrigin) {
+    public static ImageLargeFragment newInstance(String imagePath, String cameFromOrigin) {
         ImageLargeFragment fragment = new ImageLargeFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_IMAGE_PATH, imagePath);
-        args.putString(ARG_IMAGE_NAME, imageName);
-        args.putLong(ARG_FILE_SIZE, fileSize);
-        args.putString(ARG_DATE_TAKEN, dateTaken);
+        imageID = imagePath;
         args.putString("cameFrom", cameFromOrigin);
         fragment.setArguments(args);
         return fragment;
@@ -48,6 +45,7 @@ public class ImageLargeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_image_large, container, false);
+        database = DatabaseHandler.getInstance(getContext());
 
         imageView = view.findViewById(R.id.imageViewDetail);
         TextView largeImageName = view.findViewById(R.id.largeImageName);
@@ -59,14 +57,14 @@ public class ImageLargeFragment extends Fragment {
         }
 
         if (getArguments() != null) {
-            String imagePath = getArguments().getString(ARG_IMAGE_PATH);
-            String imageName = getArguments().getString(ARG_IMAGE_NAME);
+            String imagePath = imageID;
+            ImageDetailsObject tempImage = database.getImageDetails(imageID);
 //            long fileSize = getArguments().getLong(ARG_FILE_SIZE);
 //            String dateTaken = getArguments().getString(ARG_DATE_TAKEN);
 
             Glide.with(this).load(imagePath).into(imageView);
 //            String info = "Tên: " + imageName + "\nDung lượng: " + fileSize + " bytes\nNgày chụp: " + dateTaken;
-            largeImageName.setText(imageName);
+            largeImageName.setText(tempImage.getImageName());
         }
         return view;
     }

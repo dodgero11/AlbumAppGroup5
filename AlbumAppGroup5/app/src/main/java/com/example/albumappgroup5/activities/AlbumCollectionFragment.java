@@ -21,6 +21,7 @@ import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.AlbumAdapter;
 import com.example.albumappgroup5.models.AlbumModel;
 import com.example.albumappgroup5.models.AlbumObject;
+import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.example.albumappgroup5.models.ImageModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -29,14 +30,14 @@ import java.util.List;
 
 public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.OnAlbumClickListener {
 
-    static private List<ImageModel> allImages;
+    static private List<ImageDetailsObject> allImages;
     static private AlbumModel albumModel;
     private AlbumAdapter adapter; // Using global adapter
     private FloatingActionButton btnAddAlbum;
     private DatabaseHandler database;
     boolean backToMain = true;
 
-    public static AlbumCollectionFragment newInstance(AlbumModel album, List<ImageModel> images) {
+    public static AlbumCollectionFragment newInstance(AlbumModel album, List<ImageDetailsObject> images) {
         AlbumCollectionFragment fragment = new AlbumCollectionFragment();
         Bundle args = new Bundle();
         albumModel = album;
@@ -56,15 +57,15 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
         // Get albums from database
         getAlbumsFromDatabase();
 
+        Log.d("AlbumCollectionFragment", "Albums: " + albumModel);
         // Initialize adapter
         adapter = new AlbumAdapter(albumModel.getAlbumList(), this);
+
         adapter.setAlbumModel(albumModel);
         recyclerView.setAdapter(adapter);
 
         btnAddAlbum = view.findViewById(R.id.btnAddAlbum);
         btnAddAlbum.setOnClickListener(v -> showAddAlbumDialog());
-
-
 
         return view;
     }
@@ -85,10 +86,12 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
             if (newAlbumName.isEmpty()) {
                 Toast.makeText(getContext(), "Album name cannot be empty!", Toast.LENGTH_SHORT).show();
-            } else if (albumModel.getAlbumList().contains(newAlbumName)) {
-                Toast.makeText(getContext(), "Album already exists!", Toast.LENGTH_SHORT).show();
+            }
+            if (database.insertAlbum(newAlbumName)) {
+                AlbumObject album = new AlbumObject(database.getAlbumID(newAlbumName), newAlbumName);
+                createAlbum(album);
             } else {
-                createAlbum(newAlbumName);
+                Toast.makeText(getContext(), "Album name already exists!", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -98,20 +101,17 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     }
 
     // Create new album
-    private void createAlbum(String albumName) {
-        albumModel.addAlbum(albumName);
-        albumModel.getAlbumImages().put(albumName, new ArrayList<>());
-
-        database.insertAlbum(albumName);
-
+    private void createAlbum(AlbumObject album) {
+        getAlbumsFromDatabase();
         adapter.notifyDataSetChanged();
     }
 
     private void getAlbumsFromDatabase() {
         try {
             List<AlbumObject> tempAlbumList = database.getAlbums();
+            albumModel.clearAlbumList();
             for (AlbumObject album : tempAlbumList) {
-                albumModel.addAlbum(album.getAlbumName());
+                albumModel.addAlbum(album);
             }
         } catch (Exception e) {
             Log.e("error", e.toString());
@@ -125,7 +125,7 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
         Toast.makeText(getContext(), "Selected: " + albumName, Toast.LENGTH_SHORT).show();
 
-        List<ImageModel> images = albumModel.getAlbumImages().getOrDefault(albumName, new ArrayList<>()); // Get images for album
+        List<ImageDetailsObject> images = albumModel.getAlbumImages().getOrDefault(albumName, new ArrayList<>()); // Get images for album
 
         // Pass both album name and image list
         AlbumDetailFragment albumDetailFragment = AlbumDetailFragment.newInstance(albumName, images, allImages);
@@ -137,12 +137,15 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     }
 
     @Override
-    public void onAlbumLongClick(String albumName) {
+    public void onAlbumLongClick(String album) {
         new AlertDialog.Builder(getContext())
                 .setTitle("Delete Album")
                 .setMessage("Are you sure you want to delete this album?")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    albumModel.removeAlbum(albumName);
+                    if (albumModel.getAlbumByName(album) != null) {
+                        database.deleteAlbum(albumModel.getAlbumByName(album).getAlbumID());
+                        albumModel.removeAlbum(albumModel.getAlbumByName(album));
+                    }
                     adapter.notifyDataSetChanged();
                     Toast.makeText(getContext(), "Album deleted", Toast.LENGTH_SHORT).show();
                 })

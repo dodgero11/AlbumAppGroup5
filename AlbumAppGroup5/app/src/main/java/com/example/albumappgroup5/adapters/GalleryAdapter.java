@@ -8,12 +8,13 @@ import android.widget.ImageView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.albumappgroup5.R;
+import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.example.albumappgroup5.models.ImageModel;
 import java.util.List;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
     private Context context;
-    private List<ImageModel> imageList;
+    private List<ImageDetailsObject> imageList;
     private OnImageClickListener listener;
 
     // Listener to check for images clicks
@@ -22,7 +23,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         void onImageLongClick(int position); // dùng cho M4: Xóa ảnh
     }
 
-    public GalleryAdapter(Context context, List<ImageModel> imageList, OnImageClickListener listener) {
+    public GalleryAdapter(Context context, List<ImageDetailsObject> imageList, OnImageClickListener listener) {
         this.context = context;
         this.imageList = imageList;
         this.listener = listener;
@@ -38,9 +39,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     // Loading in images, add a placeholder for errors
     @Override
     public void onBindViewHolder(GalleryViewHolder holder, int position) {
-        ImageModel image = imageList.get(position);
+        ImageDetailsObject image = imageList.get(position);
         Glide.with(context)
-                .load(image.getImagePath())
+                .load(image.getImageID())
                 .error(R.mipmap.placeholder_image) // Add a placeholder for errors
                 .into(holder.imageView);
     }

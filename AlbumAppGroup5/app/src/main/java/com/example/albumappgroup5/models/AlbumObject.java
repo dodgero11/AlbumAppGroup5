@@ -1,5 +1,9 @@
 package com.example.albumappgroup5.models;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class AlbumObject {
     int albumID;
     String albumName;
