@@ -2,7 +2,9 @@ package com.example.albumappgroup5.activities;
 
 import android.graphics.Matrix;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,6 +53,10 @@ public class ImageLargeFragment extends Fragment {
         TextView largeImageName = view.findViewById(R.id.largeImageName);
         swipeRefreshLayout = getActivity().findViewById(R.id.swipeRefreshLayout);
 
+        // Disable swipe refresh
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setEnabled(false); // Disable swipe refresh while zooming
+        }
 
         if (getArguments() != null) {
             String imagePath = getArguments().getString(ARG_IMAGE_PATH);
@@ -62,32 +68,7 @@ public class ImageLargeFragment extends Fragment {
 //            String info = "Tên: " + imageName + "\nDung lượng: " + fileSize + " bytes\nNgày chụp: " + dateTaken;
             largeImageName.setText(imageName);
         }
-
-        // Initialize ScaleGestureDetector
-        scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleListener());
-
-        // Set touch listener to handle pinch-to-zoom
-        imageView.setOnTouchListener((v, event) -> {
-            scaleGestureDetector.onTouchEvent(event);
-            return true;
-        });
-
         return view;
-    }
-
-    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            if (swipeRefreshLayout != null) {
-                swipeRefreshLayout.setEnabled(false); // Disable swipe refresh while zooming
-            }
-            scaleFactor *= detector.getScaleFactor();
-            scaleFactor = Math.max(1.0f, Math.min(scaleFactor, 5.0f)); // Limit zoom levels (min 1x, max 5x)
-
-            matrix.setScale(scaleFactor, scaleFactor, imageView.getWidth() / 2f, imageView.getHeight() / 2f);
-            imageView.setImageMatrix(matrix);
-            return true;
-        }
     }
 
     public void onDestroyView() {

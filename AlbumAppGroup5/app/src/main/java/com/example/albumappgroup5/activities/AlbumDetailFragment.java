@@ -30,6 +30,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
     private TextView albumTitle;
     private GalleryAdapter adapter;
     private RecyclerView recyclerView;
+    private DatabaseHandler database;
     public static AlbumDetailFragment newInstance(String albumName, List<ImageModel> imageList, List<ImageModel> allImages) {
         AlbumDetailFragment fragment = new AlbumDetailFragment();
         Bundle args = new Bundle();
@@ -65,8 +66,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
         });
 
         // Adding images
-        view.findViewById(R.id.btnAddImageToAlbum).setOnClickListener(v -> selectImageForAlbum());
-
+        view.findViewById(R.id.btnAddImage).setOnClickListener(v -> selectImageForAlbum());
         return view;
     }
 

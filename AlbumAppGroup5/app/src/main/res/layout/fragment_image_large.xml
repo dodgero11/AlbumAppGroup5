@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
     <TextView
         android:id="@+id/largeImageName"
         android:gravity="center"
@@ -12,14 +11,14 @@
         android:layout_height="wrap_content"
         android:textSize="30sp" />
 
-    <ImageView
+    <com.example.albumappgroup5.utils.TouchImageView
         android:id="@+id/imageViewDetail"
         android:layout_gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:scaleType="fitCenter"
-        android:adjustViewBounds="true"
-        android:background="@android:color/black"/>
+        android:layout_height="match_parent"
+        android:layout_marginTop="60dp"
+        android:background="@android:color/black"
+        android:scaleType="matrix" />
 
 <!--    <TextView-->
 <!--        android:id="@+id/textViewImageInfo"-->

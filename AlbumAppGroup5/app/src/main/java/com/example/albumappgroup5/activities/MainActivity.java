@@ -116,19 +116,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         // Initialize model for albums
         albumModel = new ViewModelProvider(this).get(AlbumModel.class);
 
-        // Sample album list
-        albumModel.addAlbum("Vacation");
-        albumModel.addAlbum("Family");
-        albumModel.addAlbum("Friends");
-        albumModel.addAlbum("Work");
-        albumModel.addAlbum("Memories");
-
-        albumModel.getAlbumImages().put("Vacation", new ArrayList<>());
-        albumModel.getAlbumImages().put("Family", new ArrayList<>());
-        albumModel.getAlbumImages().put("Friends", new ArrayList<>());
-        albumModel.getAlbumImages().put("Work", new ArrayList<>());
-        albumModel.getAlbumImages().put("Memories", new ArrayList<>());
-
         recyclerView = findViewById(R.id.recyclerViewImages);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
@@ -136,7 +123,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         buttonContainer = ActionButtonFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
-        fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
         fragmentTransaction.commit();
 
         imageOptionsFragment = ImageOptionsFragment.newInstance();
@@ -244,7 +230,16 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         loadImagesFromStorage();
     }
 
+    private void returnHome() {
+        // Pop all fragments on the back stack.
+        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
+        // Make sure to show the main UI elements (RecyclerView and the bottom container).
+        findViewById(R.id.recyclerViewImages).setVisibility(View.VISIBLE);
+        findViewById(R.id.bottom_button_container).setVisibility(View.VISIBLE);
+        // Optionally hide the fragment container if it overlaps.
+        findViewById(R.id.fragmentContainer).setVisibility(View.GONE);
+    }
 
     // Accessing the camera
     private void openCamera() {
@@ -369,16 +364,15 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     public void onImageClick(int position) {
         ImageModel image = imageList.get(position); // Get the clicked image
 
-        ImageDetailFragment imageDetailFragment = ImageDetailFragment.newInstance(
+        ImageLargeFragment imageLargeFragment = ImageLargeFragment.newInstance(
                 image.getImagePath(),
                 image.getName(),
                 image.getFileSize(),
                 image.getDateTaken(),
                 "mainActivity"
         );
-
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, imageDetailFragment);
+        transaction.replace(R.id.fragmentContainer, imageLargeFragment);
         transaction.addToBackStack(null);
         transaction.commit();
 
@@ -393,15 +387,10 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     public void onImageLongClick(int position) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        String currentFragment;
-        try {
-            currentFragment = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1).getName();
-        }
-        catch (NullPointerException e) {
-            currentFragment = null;
-        }
-
-        if (Objects.equals(currentFragment, "IMAGE_OPTIONS")) {
+        Log.d("info", fragmentManager.getBackStackEntryCount() + "");
+        String currentFragment = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1).getName();
+        if (Objects.equals(currentFragment, "IMAGE_OPTIONS"))
+        {
             imageOptionsFragment.changeIndex(position);
             return;
         }
@@ -418,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.detach(buttonContainer);
+        //fragmentTransaction.detach(buttonContainer);
         fragmentTransaction.commit();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -443,9 +432,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         switch (option) // implement later
         {
             case "details": // open image details fragment/activity
-                Intent detailsActivity = new Intent(this, ImageDetailsActivity.class);
-                detailsActivity.putExtra("imageID", imageList.get(index).getImagePath());
-                startActivity(detailsActivity);
                 break;
             case "delete": // delete image
                 Log.v("info", String.valueOf(index));
@@ -475,6 +461,9 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 break;
             case "TAKE PHOTO":
                 getCameraPermission();
+                break;
+            case "RETURN HOME":
+                returnHome();
                 break;
         }
     }

@@ -42,6 +42,7 @@ dependencies {
     // Thêm Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("com.caverock:androidsvg:1.4")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     tasks.register("testClasses")
