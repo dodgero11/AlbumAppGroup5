@@ -6,7 +6,10 @@ import android.app.WallpaperManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,6 +39,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.bumptech.glide.Glide;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.AlbumModel;
@@ -54,6 +58,7 @@ import java.util.List;
 import java.util.Locale;
 import java.io.InputStream;
 import java.util.Objects;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener, ImageActivityCallback, SimpleMessageCallback {
     private static final int REQUEST_STORAGE_PERMISSION = 100;
@@ -370,7 +375,8 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 if (timeAddedDate == null) {
                     timeAddedDate = new Date();
                 }
-
+//                ImageDetailsObject tempImage = new ImageDetailsObject(imagePath, imageName, null, timeAddedDate, imagePath);
+//                imageList.add(tempImage);
                 String imageHash = getImageHash(imagePath);
 
                 if (hashSet.contains(imageHash)) {
@@ -487,10 +493,52 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 }
                 fragmentTransaction.commit();
                 break;
+            case "setWallpaper":
+                setAsWallpaperWithGlide(imageList.get(index).getImageID());
+
+                break;
             default:
                 break;
         }
     }
+    private void setAsWallpaperWithGlide(String imagePath) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            File imageFile = new File(imagePath);
+            if (!imageFile.exists()) {
+                runOnUiThread(() -> Toast.makeText(this, "Ảnh không tồn tại", Toast.LENGTH_SHORT).show());
+                return;
+            }
+
+            try {
+                // Dùng Glide để load ảnh bitmap theo kích thước màn hình
+                int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+                int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+
+                Bitmap bitmap = Glide.with(this)
+                        .asBitmap()
+                        .load(imageFile)
+                        .submit(screenWidth, screenHeight) // load đúng size màn hình
+                        .get(); // blocking get() trong background thread
+
+                if (bitmap != null) {
+                    WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+                    wallpaperManager.setBitmap(bitmap);
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "Đã đặt ảnh làm hình nền", Toast.LENGTH_SHORT).show());
+                } else {
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "Không thể đọc ảnh", Toast.LENGTH_SHORT).show());
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Lỗi khi đặt hình nền", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+
 
     @Override
     public void receiveMessage(String message) {

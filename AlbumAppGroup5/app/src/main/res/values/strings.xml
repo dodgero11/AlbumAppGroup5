@@ -5,6 +5,7 @@
     <string name="viewDetails">View details</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="setWallpaper">Set Wallpaper</string>
 
     <!-- app settings -->
     <string name="settingsTitle">Settings</string>
