@@ -116,19 +116,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         // Initialize model for albums
         albumModel = new ViewModelProvider(this).get(AlbumModel.class);
 
-        // Sample album list
-        albumModel.addAlbum("Vacation");
-        albumModel.addAlbum("Family");
-        albumModel.addAlbum("Friends");
-        albumModel.addAlbum("Work");
-        albumModel.addAlbum("Memories");
-
-        albumModel.getAlbumImages().put("Vacation", new ArrayList<>());
-        albumModel.getAlbumImages().put("Family", new ArrayList<>());
-        albumModel.getAlbumImages().put("Friends", new ArrayList<>());
-        albumModel.getAlbumImages().put("Work", new ArrayList<>());
-        albumModel.getAlbumImages().put("Memories", new ArrayList<>());
-
         recyclerView = findViewById(R.id.recyclerViewImages);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
@@ -243,7 +230,16 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         loadImagesFromStorage();
     }
 
+    private void returnHome() {
+        // Pop all fragments on the back stack.
+        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
+        // Make sure to show the main UI elements (RecyclerView and the bottom container).
+        findViewById(R.id.recyclerViewImages).setVisibility(View.VISIBLE);
+        findViewById(R.id.bottom_button_container).setVisibility(View.VISIBLE);
+        // Optionally hide the fragment container if it overlaps.
+        findViewById(R.id.fragmentContainer).setVisibility(View.GONE);
+    }
 
     // Accessing the camera
     private void openCamera() {
@@ -411,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.detach(buttonContainer);
+        //fragmentTransaction.detach(buttonContainer);
         fragmentTransaction.commit();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -465,6 +461,9 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 break;
             case "TAKE PHOTO":
                 getCameraPermission();
+                break;
+            case "RETURN HOME":
+                returnHome();
                 break;
         }
     }

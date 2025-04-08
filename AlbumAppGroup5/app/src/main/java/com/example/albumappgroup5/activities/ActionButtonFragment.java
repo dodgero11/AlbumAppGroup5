@@ -36,12 +36,17 @@ public class ActionButtonFragment extends Fragment {
         // bind buttons
         final Button btnOpenAlbum = view.findViewById(R.id.btnOpenAlbum);
         final Button btnOpenCamera = view.findViewById(R.id.btnCaptureImage);
+        final Button btnReturnHome = view.findViewById(R.id.btnReturnHome);
+
 
         btnOpenAlbum.setOnClickListener(v -> {
             main.receiveMessage("OPEN ALBUM");
         });
         btnOpenCamera.setOnClickListener(v -> {
             main.receiveMessage("TAKE PHOTO");
+        });
+        btnReturnHome.setOnClickListener(v -> {
+            main.receiveMessage("RETURN HOME");
         });
 
         return view;

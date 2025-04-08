@@ -1,6 +1,7 @@
 package com.example.albumappgroup5.activities;
 
 import android.app.AlertDialog;
+import android.util.Log;
 import android.widget.EditText;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,7 +20,9 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.AlbumAdapter;
 import com.example.albumappgroup5.models.AlbumModel;
+import com.example.albumappgroup5.models.AlbumObject;
 import com.example.albumappgroup5.models.ImageModel;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +32,8 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     static private List<ImageModel> allImages;
     static private AlbumModel albumModel;
     private AlbumAdapter adapter; // Using global adapter
-    private Button btnAddAlbum;
+    private FloatingActionButton btnAddAlbum;
+    private DatabaseHandler database;
     boolean backToMain = true;
 
     public static AlbumCollectionFragment newInstance(AlbumModel album, List<ImageModel> images) {
@@ -44,10 +48,13 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     @Nullable
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_album_collection, container, false);
-
+        database = DatabaseHandler.getInstance(getContext());
         // Set up RecyclerView
         RecyclerView recyclerView = view.findViewById(R.id.recyclerViewAlbums);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // Get albums from database
+        getAlbumsFromDatabase();
 
         // Initialize adapter
         adapter = new AlbumAdapter(albumModel.getAlbumList(), this);
@@ -55,6 +62,8 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
         btnAddAlbum = view.findViewById(R.id.btnAddAlbum);
         btnAddAlbum.setOnClickListener(v -> showAddAlbumDialog());
+
+
 
         return view;
     }
@@ -91,7 +100,21 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     private void createAlbum(String albumName) {
         albumModel.addAlbum(albumName);
         albumModel.getAlbumImages().put(albumName, new ArrayList<>());
-        adapter.notifyDataSetChanged(); // Update RecyclerView when a new album is added
+
+        database.insertAlbum(albumName);
+
+        adapter.notifyDataSetChanged();
+    }
+
+    private void getAlbumsFromDatabase() {
+        try {
+            List<AlbumObject> tempAlbumList = database.getAlbums();
+            for (AlbumObject album : tempAlbumList) {
+                albumModel.addAlbum(album.getAlbumName());
+            }
+        } catch (Exception e) {
+            Log.e("error", e.toString());
+        }
     }
 
     @Override

@@ -3,23 +3,42 @@
     android:id="@+id/bottom_button_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="16dp"
     android:gravity="center"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp"
-    android:elevation="4dp">
+    android:elevation="4dp"
+    android:background="?attr/colorPrimary">
 
     <Button
         android:id="@+id/btnCaptureImage"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/actionTakePhoto"
-        android:layout_marginBottom="8dp"/>
+        android:layout_weight="1"
+        android:text="Take Photo"
+        android:textColor="@android:color/white"
+        android:backgroundTint="?attr/colorAccent"
+        android:layout_marginEnd="8dp"
+        android:stateListAnimator="@null" />
 
     <Button
         android:id="@+id/btnOpenAlbum"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/actionViewAlbums" />
+        android:layout_weight="1"
+        android:text="View Albums"
+        android:textColor="@android:color/white"
+        android:backgroundTint="?attr/colorAccent"
+        android:layout_marginEnd="8dp"
+        android:stateListAnimator="@null" />
+
+    <Button
+        android:id="@+id/btnReturnHome"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Image Gallery"
+        android:textColor="@android:color/white"
+        android:backgroundTint="?attr/colorAccent"
+        android:stateListAnimator="@null" />
+
 </LinearLayout>
