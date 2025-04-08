@@ -17,7 +17,7 @@ public class AlbumModel extends ViewModel {
     public Map<String, List<ImageModel>> getAlbumImages() {
         return albumImages;
     }
-
+    private Map<String, String> albumThumbnails = new HashMap<>();
     public void addAlbum(String albumName) {
         if (!albumList.contains(albumName)) {
             albumList.add(albumName);
@@ -30,5 +30,12 @@ public class AlbumModel extends ViewModel {
             albumList.remove(albumName);
             albumImages.remove(albumName);
         }
+    }
+    public void setAlbumThumbnail(String albumName, String imagePath) {
+        albumThumbnails.put(albumName, imagePath);
+    }
+
+    public String getAlbumThumbnail(String albumName) {
+        return albumThumbnails.getOrDefault(albumName, null);
     }
 }

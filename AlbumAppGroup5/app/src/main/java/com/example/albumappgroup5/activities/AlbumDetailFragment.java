@@ -12,12 +12,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.ImageModel;
+import com.example.albumappgroup5.models.AlbumModel;
 
 import java.util.List;
 
@@ -98,9 +100,27 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
 
     @Override
     public void onImageLongClick(int position) {
-        imagesOfAlbum.remove(position);
-        adapter.notifyItemRemoved(position);
+        ImageModel selectedImage = imagesOfAlbum.get(position);
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("Tùy chọn ảnh")
+                .setItems(new CharSequence[]{"Đặt làm ảnh đại diện album", "Xóa ảnh khỏi album"}, (dialog, which) -> {
+                    switch (which) {
+                        case 0: // Set as album thumbnail
+                            AlbumModel albumModel = new ViewModelProvider(requireActivity()).get(AlbumModel.class);
+                            albumModel.setAlbumThumbnail(nameOfAlbum, selectedImage.getImagePath());
+                            Toast.makeText(getContext(), "Đã đặt ảnh đại diện cho album", Toast.LENGTH_SHORT).show();
+                            break;
+
+                        case 1: // Delete
+                            showDeleteConfirmationDialog(position);
+                            break;
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
     }
+
 
     private void showDeleteConfirmationDialog(int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
