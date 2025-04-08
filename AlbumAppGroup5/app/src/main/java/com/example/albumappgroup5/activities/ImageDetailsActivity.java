@@ -87,7 +87,15 @@ public class ImageDetailsActivity extends Activity {
         tagAddButton = findViewById(R.id.tagAddButton);
         updateDetailsButton = findViewById(R.id.updateDetailsButton);
 
-        details = database.getImageDetails(imageID);
+        if (database.imageExists(imageID))
+            details = database.getImageDetails(imageID);
+        else
+        {
+            if (database.insertImage(imageID))
+                details = new ImageDetailsObject(imageID, null, null, null, null);
+            else
+                details = null;
+        }
         if (details == null) {
             Toast.makeText(this, "Error showing image details", Toast.LENGTH_LONG
             ).show();
@@ -160,10 +168,14 @@ public class ImageDetailsActivity extends Activity {
         details.setImageName(nameEdit.getText().length() == 0 ? null : nameEdit.getText().toString());
         details.setDescription(descriptionEdit.getText().length() == 0 ? null : descriptionEdit.getText().toString());
         details.setLocation(locationEdit.getText().length() == 0 ? null : locationEdit.getText().toString());
-        if (database.insertImage(details))
+        if (database.updateImage(details))
             Toast.makeText(this, "Details updated", Toast.LENGTH_SHORT).show();
         else {
             Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        if (deleteMarked.isEmpty() && addPending.isEmpty()) {
             finish();
             return;
         }
