@@ -177,6 +177,25 @@ public class DatabaseHandler {
         return new ImageDetailsObject(imageID, null, null, null, null);
     }
 
+    public List<String> searchImages (String searchString) {
+    // return list of imageID
+        List<String> result = new ArrayList<>();
+
+        searchString = "%" + searchString + "%";
+        try (Cursor data = database.rawQuery("SELECT imageID FROM Image " +
+                "WHERE imageName LIKE ? OR imageDescription LIKE ?", new String[]{searchString, searchString})) {
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                result.add(data.getString(0));
+            }
+            return result;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
     public List<String> getAlbumImages (int albumID) {
     // return list of imageID
         List<String> result = new ArrayList<>();
