@@ -177,6 +177,17 @@ public class DatabaseHandler {
         return new ImageDetailsObject(imageID, null, null, null, null);
     }
 
+    public boolean imageExists (String imageID) {
+    // return true if imageId is in table Image, false otherwise
+        try (Cursor data = database.rawQuery("SELECT 1 FROM Image WHERE imageID = ?", new String[]{imageID})) {
+            return (data.getCount() > 0);
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return false;
+        }
+    }
+
     public List<String> searchImages (String searchString) {
     // return list of imageID
         List<String> result = new ArrayList<>();
