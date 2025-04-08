@@ -379,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         // Hide RecyclerView and buttons when showing the detail fragment
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
-        findViewById(R.id.bottom_button_container).setVisibility(View.GONE);
+        findViewById(R.id.fragmentContainerBottom).setVisibility(View.GONE);
         findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
     }
 
