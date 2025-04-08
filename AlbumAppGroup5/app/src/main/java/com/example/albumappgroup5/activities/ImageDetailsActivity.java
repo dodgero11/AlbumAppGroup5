@@ -192,7 +192,7 @@ public class ImageDetailsActivity extends Activity {
             Toast.makeText(this, "Tags updated", Toast.LENGTH_SHORT).show();
         }
         else {
-            Toast.makeText(this, String.valueOf(failure) + " tags failed to update", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, String.valueOf(failure) + (failure == 1 ? " tag" : " tags" ) + " failed to update", Toast.LENGTH_SHORT).show();
         }
 
         finish();
