@@ -37,6 +37,7 @@ public class ActionButtonFragment extends Fragment {
         final Button btnOpenAlbum = view.findViewById(R.id.btnOpenAlbum);
         final Button btnOpenCamera = view.findViewById(R.id.btnCaptureImage);
         final Button btnReturnHome = view.findViewById(R.id.btnReturnHome);
+        final Button btnSearchImage = view.findViewById(R.id.btnSearchImage);
 
 
         btnOpenAlbum.setOnClickListener(v -> {
@@ -47,6 +48,9 @@ public class ActionButtonFragment extends Fragment {
         });
         btnReturnHome.setOnClickListener(v -> {
             main.receiveMessage("RETURN HOME");
+        });
+        btnSearchImage.setOnClickListener(v -> {
+            main.receiveMessage("SEARCH IMAGE");
         });
 
         return view;

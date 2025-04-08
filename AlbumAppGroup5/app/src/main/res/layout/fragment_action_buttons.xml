@@ -9,6 +9,30 @@
     android:elevation="4dp"
     android:background="?attr/colorPrimary">
 
+
+
+    <Button
+        android:id="@+id/btnReturnHome"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Image Hub"
+        android:textColor="@android:color/white"
+        android:backgroundTint="?attr/colorAccent"
+        android:layout_marginEnd="8dp"
+        android:stateListAnimator="@null" />
+
+    <Button
+        android:id="@+id/btnOpenAlbum"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="View Album"
+        android:textColor="@android:color/white"
+        android:backgroundTint="?attr/colorAccent"
+        android:layout_marginEnd="8dp"
+        android:stateListAnimator="@null" />
+
     <Button
         android:id="@+id/btnCaptureImage"
         android:layout_width="0dp"
@@ -21,22 +45,11 @@
         android:stateListAnimator="@null" />
 
     <Button
-        android:id="@+id/btnOpenAlbum"
-        android:layout_width="0dp"
+        android:id="@+id/btnSearchImage"
+        android:layout_width="6dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="View Albums"
-        android:textColor="@android:color/white"
-        android:backgroundTint="?attr/colorAccent"
-        android:layout_marginEnd="8dp"
-        android:stateListAnimator="@null" />
-
-    <Button
-        android:id="@+id/btnReturnHome"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Image Gallery"
+        android:text="Image Search"
         android:textColor="@android:color/white"
         android:backgroundTint="?attr/colorAccent"
         android:stateListAnimator="@null" />
