@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         buttonContainer = ActionButtonFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
+        fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
         fragmentTransaction.commit();
 
         imageOptionsFragment = ImageOptionsFragment.newInstance();
@@ -387,10 +388,15 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     public void onImageLongClick(int position) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Log.d("info", fragmentManager.getBackStackEntryCount() + "");
-        String currentFragment = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1).getName();
-        if (Objects.equals(currentFragment, "IMAGE_OPTIONS"))
-        {
+        String currentFragment;
+        try {
+            currentFragment = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1).getName();
+        }
+        catch (NullPointerException e) {
+            currentFragment = null;
+        }
+
+        if (Objects.equals(currentFragment, "IMAGE_OPTIONS")) {
             imageOptionsFragment.changeIndex(position);
             return;
         }
@@ -407,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        //fragmentTransaction.detach(buttonContainer);
+        fragmentTransaction.detach(buttonContainer);
         fragmentTransaction.commit();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -432,6 +438,9 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         switch (option) // implement later
         {
             case "details": // open image details fragment/activity
+                Intent detailsActivity = new Intent(this, ImageDetailsActivity.class);
+                detailsActivity.putExtra("imageID", imageList.get(index).getImagePath());
+                startActivity(detailsActivity);
                 break;
             case "delete": // delete image
                 Log.v("info", String.valueOf(index));
