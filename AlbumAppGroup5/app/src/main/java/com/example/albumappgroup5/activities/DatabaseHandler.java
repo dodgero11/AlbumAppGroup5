@@ -806,11 +806,11 @@ public class DatabaseHandler {
         database.beginTransaction();
         try {
             ContentValues item = new ContentValues();
-            if (image.getImageName() != null)
+//            if (image.getImageName() != null)
                 item.put("imageName", image.getImageName());
-            if (image.getDescription() != null)
+//            if (image.getDescription() != null)
                 item.put("description", image.getDescription());
-            if (image.getLocation() != null)
+//            if (image.getLocation() != null)
                 item.put("location", image.getLocation());
             if (database.update("Image", item, "imageID = ?", new String[]{image.getImageID()}) > 0)
                 database.setTransactionSuccessful();
