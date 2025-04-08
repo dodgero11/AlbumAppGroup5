@@ -310,6 +310,22 @@ public class DatabaseHandler {
         }
     }
 
+    public List<String> getTagNames () {
+        List<String> result = new ArrayList<>();
+
+        try (Cursor data = database.rawQuery("SELECT tagName from Tag", null)) {
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                result.add(data.getString(0));
+            }
+            return result;
+        }
+        catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
     public String getImagePassword (String imageID) {
     // return null on error, empty string ("") if no password found, and password string otherwise
         try (Cursor data = database.rawQuery("SELECT password FROM ImagePassword WHERE imageID = ?",
