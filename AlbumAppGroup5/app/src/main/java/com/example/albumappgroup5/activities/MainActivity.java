@@ -19,6 +19,7 @@ import android.view.View;
 import android.media.MediaScannerConnection;
 
 import android.content.ContentValues;
+import android.widget.Toolbar;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -171,13 +172,16 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             }
         });
 
+        // toolbar button to open settings
+        Toolbar homeToolbar = findViewById(R.id.homeToolbar);
+        homeToolbar.setNavigationOnClickListener(v -> {
+            Intent settingsActivity = new Intent(this, AppSettings.class);
+            startActivityForResult(settingsActivity, 0);
+        });
+
         checkAndRequestPermissions();
 
         applySettings(); // load settings from previous session (if available)
-
-        // testing settings (use this sample when calling the settings activity)
-//        Intent test = new Intent(this, AppSettings.class);
-//        startActivityForResult(test, 0);
     }
 
     @Override
@@ -228,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         buttonContainer = ActionButtonFragment.newInstance();
         findViewById(R.id.fragmentContainerBottom).setVisibility(View.VISIBLE);
+        findViewById(R.id.homeToolbar).setVisibility(View.VISIBLE);
         fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
 
         fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
@@ -410,6 +415,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         // Hide RecyclerView and buttons when showing the detail fragment
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
         findViewById(R.id.fragmentContainerBottom).setVisibility(View.GONE);
+        findViewById(R.id.homeToolbar).setVisibility(View.GONE);
         findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
     }
 
