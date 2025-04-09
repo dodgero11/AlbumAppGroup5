@@ -551,8 +551,10 @@ public class DatabaseHandler {
         boolean success = true;
         database.beginTransaction();
         try (Cursor check = database.rawQuery("SELECT 1 FROM Tag WHERE tagName LIKE ?", new String[]{tagName})) {
-            if (check.getCount() != 0)
+            if (check.getCount() != 0) {
+                database.setTransactionSuccessful();
                 success = false;
+            }
             else {
                 ContentValues item = new ContentValues();
                 item.put("tagName", tagName);

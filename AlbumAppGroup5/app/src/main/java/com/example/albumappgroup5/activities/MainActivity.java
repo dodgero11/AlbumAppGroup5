@@ -180,6 +180,12 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 //        startActivityForResult(test, 0);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        database.closeDatabase();
+    }
+
     //
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -212,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     // Reload images when returning to MainActivity
     private void reloadGalleryView() {
         findViewById(R.id.recyclerViewImages).setVisibility(View.VISIBLE);
+        findViewById(R.id.fragmentContainerBottom).setVisibility(View.VISIBLE);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 

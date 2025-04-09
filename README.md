@@ -1,11 +1,11 @@
 Tasks in progress:
 - Set an image as background - codefulTM
 - Search an image by name - codefulTM
-- Add tags/name to images - ro11
-- Add search function - ro11
 - move images to local storage - buggingNewbie
 
 Tasks completed: 
+- Add tags/name to images - buggingNewbie
+- Add search function - ro11
 - Detect duplicated images - ro11
 - Zoom in/Zoom out in details mode - ro11
 - Adding/Removing images to/from albums - ro11
