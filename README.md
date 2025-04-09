@@ -1,4 +1,4 @@
-Tasks incomplete:
+Tasks to be done:
 - Cho xem ảnh khi không còn focus ứng dụng, như đang ở màn hình chính hoặc mở ứng dụng khác (mini window)
 - Export ảnh/album để có thể lưu trữ nơi khác. Import lại các ảnh đó.
 - Cho phép sao chép ảnh hoặc share trực tiếp qua 1 ứng dụng khác
