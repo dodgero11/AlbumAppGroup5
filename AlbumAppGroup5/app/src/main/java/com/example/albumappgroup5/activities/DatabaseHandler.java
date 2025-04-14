@@ -28,6 +28,7 @@ public class DatabaseHandler {
 //            database = SQLiteDatabase.openDatabase(context.getFilesDir().getPath() + Global.DATABASE_NAME, null, SQLiteDatabase.CREATE_IF_NECESSARY);
             database = context.openOrCreateDatabase(Global.DATABASE_NAME, Context.MODE_PRIVATE, null);
             database.execSQL("PRAGMA foreign_key = ON");
+            database.setForeignKeyConstraintsEnabled(true);
         }
         catch (SQLiteException e) {
             Log.e("error", "cannot access database, " + e);
