@@ -354,6 +354,26 @@ public class DatabaseHandler {
         }
     }
 
+    public List<String> searchPartialTag (String searchString) {
+        // return list of imageID, or empty list if no matches are found
+        searchString = "%" + searchString + "%";
+        List<String> result = new ArrayList<>();
+        try (Cursor data = database.rawQuery("SELECT DISTINCT imageID " +
+                        "FROM ImageTag " +
+                        "JOIN Tag ON ImageTag.tagID = Tag.tagID " +
+                        "WHERE tagName LIKE ?",
+                new String[]{searchString})) {
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                result.add(data.getString(0));
+            }
+            return result;
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
     public List<TagObject> getImageTagList (String imageID) {
         List<TagObject> result = new ArrayList<>();
 
