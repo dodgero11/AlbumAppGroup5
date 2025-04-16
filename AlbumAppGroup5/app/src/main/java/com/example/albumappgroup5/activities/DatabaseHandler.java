@@ -28,6 +28,7 @@ public class DatabaseHandler {
 //            database = SQLiteDatabase.openDatabase(context.getFilesDir().getPath() + Global.DATABASE_NAME, null, SQLiteDatabase.CREATE_IF_NECESSARY);
             database = context.openOrCreateDatabase(Global.DATABASE_NAME, Context.MODE_PRIVATE, null);
             database.execSQL("PRAGMA foreign_key = ON");
+            database.setForeignKeyConstraintsEnabled(true);
         }
         catch (SQLiteException e) {
             Log.e("error", "cannot access database, " + e);
@@ -378,6 +379,26 @@ public class DatabaseHandler {
                 return getImagesByTag(data.getInt(0), sortCriteria, ascending);
             }
             return new ArrayList<>(); // empty list
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+            return null;
+        }
+    }
+
+    public List<String> searchPartialTag (String searchString) {
+        // return list of imageID, or empty list if no matches are found
+        searchString = "%" + searchString + "%";
+        List<String> result = new ArrayList<>();
+        try (Cursor data = database.rawQuery("SELECT DISTINCT imageID " +
+                        "FROM ImageTag " +
+                        "JOIN Tag ON ImageTag.tagID = Tag.tagID " +
+                        "WHERE tagName LIKE ?",
+                new String[]{searchString})) {
+            data.moveToPosition(-1);
+            while (data.moveToNext()) {
+                result.add(data.getString(0));
+            }
+            return result;
         } catch (SQLiteException e) {
             Log.e("error", e.toString());
             return null;

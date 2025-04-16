@@ -105,14 +105,7 @@ public class ImageSearchFragment extends Fragment {
             // Show full list if query is empty
             filteredImages.addAll(database.getAllImages());
         } else {
-            String lowerCaseQuery = query.toLowerCase();
-            List<String> tagNames = database.getTagNames();
-
-            for (String tagName : tagNames) {
-                if (tagName.toLowerCase().contains(lowerCaseQuery)) {
-                    imageIDs.addAll(database.getImagesByTag(tagName));
-                }
-            }
+            imageIDs = database.searchPartialTag(query);
         }
         // Remove duplicates in imageIDs
         imageIDs = new ArrayList<>(new HashSet<>(imageIDs));

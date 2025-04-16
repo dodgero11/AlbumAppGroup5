@@ -311,6 +311,14 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     }
 
     private void checkAndRequestPermissions() {
+        if (Build.VERSION.SDK_INT >= 30) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE},
+                        100);
+            }
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_STORAGE_PERMISSION);
@@ -478,8 +486,23 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 startActivity(detailsActivity);
                 break;
             case "delete": // delete image
-                Log.v("info", String.valueOf(index));
                 // remove image (only in-app, not yet in internal storage)
+
+                // delete file (not working)
+//                if (Environment.isExternalStorageManager()) {
+//                    Log.v("info", "perms ok");
+//                }
+//                else {
+//                    Log.v("info", "perms denied");
+//                }
+//                File file = new File(imageList.get(index).getImageID());
+//                if (file.delete()) {
+//                    Log.v("info", "delete ok");
+//                }
+//                else {
+//                    Log.v("info", "delete fail");
+//                }
+                database.deleteImage(imageList.get(index).getImageID()); // delete all image info from db
                 imageList.remove(index);
                 adapter.notifyItemRemoved(index);
             case "cancel": // close and destroy the options fragment
