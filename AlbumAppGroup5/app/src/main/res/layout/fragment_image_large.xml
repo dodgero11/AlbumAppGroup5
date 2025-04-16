@@ -11,14 +11,14 @@
         android:layout_height="wrap_content"
         android:textSize="30sp" />
 
-    <com.example.albumappgroup5.utils.TouchImageView
+    <ImageView
         android:id="@+id/imageViewDetail"
         android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="60dp"
         android:background="@android:color/black"
-        android:scaleType="matrix" />
+        android:scaleType="fitCenter" />
 
 <!--    <TextView-->
 <!--        android:id="@+id/textViewImageInfo"-->
