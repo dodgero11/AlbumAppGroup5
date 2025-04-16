@@ -242,9 +242,40 @@ public class DatabaseHandler {
         }
         return -1;
     }
+    public List<ImageDetailsObject> getAlbumDetailedImages(int albumID) {
+        List<ImageDetailsObject> images = new ArrayList<>();
+        // Query that joins Image with ImageAlbum so that we can get details of images belonging to the album
+        String query = "SELECT Image.imageID, Image.imageName, Image.description, " +
+                "Image.timeAdded, Image.location " +
+                "FROM Image " +
+                "INNER JOIN ImageAlbum ON Image.imageID = ImageAlbum.imageID " +
+                "WHERE ImageAlbum.albumID = ?";
+        try (Cursor data = database.rawQuery(query, new String[]{String.valueOf(albumID)})) {
+            if (data.moveToFirst()) {
+                do {
+                    String id = data.getString(data.getColumnIndexOrThrow("imageID"));
+                    String name = data.getString(data.getColumnIndexOrThrow("imageName"));
+                    String description = data.getString(data.getColumnIndexOrThrow("description"));
+                    long timeAddedMillis = data.getLong(data.getColumnIndexOrThrow("timeAdded"));
+                    Date timeAdded = new Date(timeAddedMillis);
+                    String location = data.getString(data.getColumnIndexOrThrow("location"));
 
-    public List<String> getAlbumImages (int albumID) {
-    // return list of imageID
+                    ImageDetailsObject image = new ImageDetailsObject(id, name, description, timeAdded, location);
+                    images.add(image);
+                } while (data.moveToNext());
+            }
+        } catch (SQLiteException e) {
+            Log.e("error", "SQLiteException in getAlbumImages: " + e.toString());
+            return null;
+        } catch (IllegalArgumentException e) {
+            Log.e("error", "Column error in getAlbumImages: " + e.toString());
+            return null;
+        }
+        return images;
+    }
+
+    public List<String> getAlbumImages(int albumID) {
+        // return list of imageID
         List<String> result = new ArrayList<>();
 
         try (Cursor data = database.rawQuery("SELECT imageID FROM ImageAlbum WHERE albumID = ?", new String[]{String.valueOf(albumID)})) {

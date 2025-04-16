@@ -100,8 +100,6 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
 
     @Override
     public void onImageClick(int position) {
-        Toast.makeText(getContext(), "Clicked on image at position " + position, Toast.LENGTH_SHORT).show();
-
         ImageDetailsObject image = imagesOfAlbum.get(position); // Get the clicked image
 
         ImageLargeFragment imageLargeFragment = ImageLargeFragment.newInstance(
@@ -124,13 +122,12 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
         ImageDetailsObject selectedImage = imagesOfAlbum.get(position);
 
         new AlertDialog.Builder(getContext())
-                .setTitle("Tùy chọn ảnh")
-                .setItems(new CharSequence[]{"Đặt làm ảnh đại diện album", "Xóa ảnh khỏi album"}, (dialog, which) -> {
+                .setTitle("Image Options")
+                .setItems(new CharSequence[]{"Make as album thumbnail", "Remove from album"}, (dialog, which) -> {
                     switch (which) {
                         case 0: // Set as album thumbnail
                             AlbumModel albumModel = new ViewModelProvider(requireActivity()).get(AlbumModel.class);
                             albumModel.setAlbumThumbnail(nameOfAlbum, selectedImage.getImageID());
-                            Toast.makeText(getContext(), "Đã đặt ảnh đại diện cho album", Toast.LENGTH_SHORT).show();
                             break;
 
                         case 1: // Delete
@@ -138,7 +135,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
                             break;
                     }
                 })
-                .setNegativeButton("Hủy", null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
@@ -150,8 +147,6 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
                 .setPositiveButton("Yes", (dialog, which) -> {
                     imagesOfAlbum.remove(position);
                     adapter.notifyItemRemoved(position);
-
-                    Toast.makeText(getContext(), "Image deleted", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("No", null)
                 .show();

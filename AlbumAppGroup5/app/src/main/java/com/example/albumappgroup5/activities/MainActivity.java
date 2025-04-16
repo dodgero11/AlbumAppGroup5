@@ -151,8 +151,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
             // Stop the refreshing animation
             swipeRefreshLayout.setRefreshing(false);
-
-            Toast.makeText(this, "Gallery refreshed!", Toast.LENGTH_SHORT).show();
         });
 
         // Listen for the result when ImageDetailFragment is closed
