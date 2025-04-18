@@ -1,15 +1,23 @@
 package com.example.albumappgroup5.adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Color;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.albumappgroup5.R;
+import com.example.albumappgroup5.activities.DatabaseHandler;
 import com.example.albumappgroup5.models.ImageDetailsObject;
-import com.example.albumappgroup5.models.ImageModel;
+
 import java.util.List;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
@@ -40,10 +48,20 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     @Override
     public void onBindViewHolder(GalleryViewHolder holder, int position) {
         ImageDetailsObject image = imageList.get(position);
-        Glide.with(context)
-                .load(image.getImageID())
-                .error(R.mipmap.placeholder_image) // Add a placeholder for errors
-                .into(holder.imageView);
+        // Check if image is password protected
+        if (image.hasPassword() && image.isPasswordProtected()) {
+            holder.imageView.setBackgroundColor(Color.BLACK);
+            holder.imageView.setImageDrawable(null);
+        } else {
+            // Load actual image with Glide as usual
+            Glide.with(context)
+                    .load(image.getImageID())
+                    .placeholder(R.mipmap.placeholder_image)
+                    .into(holder.imageView);
+        }
+
+        // Set name and other data
+        holder.imageView.setContentDescription(image.getImageName());
     }
 
     @Override

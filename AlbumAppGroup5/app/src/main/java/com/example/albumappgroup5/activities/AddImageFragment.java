@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.ImageDetailsObject;
-import com.example.albumappgroup5.models.ImageModel;
 
 public class AddImageFragment extends Fragment implements GalleryAdapter.OnImageClickListener {
     private static List<ImageDetailsObject> allOfImages;

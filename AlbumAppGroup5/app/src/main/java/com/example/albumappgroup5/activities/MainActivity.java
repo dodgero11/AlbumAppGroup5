@@ -6,14 +6,15 @@ import android.app.WallpaperManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.Toast;
 import android.view.View;
 import android.media.MediaScannerConnection;
@@ -37,11 +38,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.bumptech.glide.Glide;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.AlbumModel;
 import com.example.albumappgroup5.models.ImageDetailsObject;
-import com.example.albumappgroup5.models.ImageModel;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,6 +56,8 @@ import java.util.List;
 import java.util.Locale;
 import java.io.InputStream;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener, ImageActivityCallback, SimpleMessageCallback {
     private static final int REQUEST_STORAGE_PERMISSION = 100;
@@ -389,14 +392,28 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 }
                 else {
                     hashSet.add(imageHash);
+
+                    // Create image object
                     ImageDetailsObject tempImage = new ImageDetailsObject(imagePath, imageName, null, timeAddedDate, imagePath);
+
+                    // Check if image password exists in database
+                    String tempPassword = database.getImagePassword(tempImage.getImageID());
+
+                    // If it exists, use password info from database
+                    if (!tempPassword.equals("")) {
+                        tempImage.setHasPassword(true);
+                        tempImage.setPasswordProtected(true);
+                        // Don't set the actual password - that stays in the database
+                    } else {
+                        // Insert as new image if it doesn't exist
+                        try {
+                            database.insertImage(tempImage);
+                        } catch (Exception e) {
+                            Log.e("error", e.toString());
+                        }
+                    }
+
                     imageList.add(tempImage);
-                    try {
-                        database.insertImage(tempImage);
-                    }
-                    catch (Exception e) {
-                        Log.e("error", e.toString());
-                    }
                 }
             }
             cursor.close();
@@ -411,6 +428,26 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     public void onImageClick(int position) {
         ImageDetailsObject image = imageList.get(position); // Get the clicked image
 
+        // Check if image has password protection
+        if (image.isPasswordProtected()) {
+            passwordCheckAsync(position)
+                    .thenAccept(ok -> {
+                        runOnUiThread(() -> {
+                            if (ok) {
+                                openImageLargeFragment(image);
+                            } else {
+                                Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
+        } else {
+            // No password, show image directly
+            openImageLargeFragment(image);
+        }
+    }
+
+    // Helper method to open the image fragment
+    private void openImageLargeFragment(ImageDetailsObject image) {
         ImageLargeFragment imageLargeFragment = ImageLargeFragment.newInstance(
                 image.getImageID(),
                 "mainActivity"
@@ -481,9 +518,27 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         switch (option) // implement later
         {
             case "details": // open image details fragment/activity
-                Intent detailsActivity = new Intent(this, ImageDetailsActivity.class);
-                detailsActivity.putExtra("imageID", imageList.get(index).getImageID());
-                startActivity(detailsActivity);
+                ImageDetailsObject image = imageList.get(index); // Get the clicked image
+
+                // Check if image has password protection
+                if (image.isPasswordProtected()) {
+                    passwordCheckAsync(index)
+                            .thenAccept(ok -> {
+                                runOnUiThread(() -> {
+                                    if (ok) {
+                                        Intent detailsActivity = new Intent(this, ImageDetailsActivity.class);
+                                        detailsActivity.putExtra("imageID", imageList.get(index).getImageID());
+                                        startActivity(detailsActivity);
+                                    } else {
+                                        Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            });
+                } else {
+                    Intent detailsActivity = new Intent(this, ImageDetailsActivity.class);
+                    detailsActivity.putExtra("imageID", imageList.get(index).getImageID());
+                    startActivity(detailsActivity);
+                }
                 break;
             case "delete": // delete image
                 // remove image (only in-app, not yet in internal storage)
@@ -513,6 +568,25 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                     fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
                 }
                 fragmentTransaction.commit();
+                break;
+            case "setWallpaper":
+                ImageDetailsObject setWallPaperImage = imageList.get(index); // Get the clicked image
+
+                // Check if image has password protection
+                if (setWallPaperImage.isPasswordProtected()) {
+                    passwordCheckAsync(index)
+                            .thenAccept(ok -> {
+                                runOnUiThread(() -> {
+                                    if (ok) {
+                                        setAsWallpaperWithGlide(imageList.get(index).getImageID());
+                                    } else {
+                                        Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            });
+                } else {
+                    setAsWallpaperWithGlide(imageList.get(index).getImageID());
+                }
                 break;
             default:
                 break;
@@ -559,5 +633,66 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             e.printStackTrace();
             return null;
         }
+    }
+
+    private void setAsWallpaperWithGlide(String imagePath) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            File imageFile = new File(imagePath);
+            if (!imageFile.exists()) {
+                runOnUiThread(() -> Toast.makeText(this, "Ảnh không tồn tại", Toast.LENGTH_SHORT).show());
+                return;
+            }
+
+            try {
+                // Dùng Glide để load ảnh bitmap theo kích thước màn hình
+                int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+                int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+
+                Bitmap bitmap = Glide.with(this)
+                        .asBitmap()
+                        .load(imageFile)
+                        .submit(screenWidth, screenHeight) // load đúng size màn hình
+                        .get(); // blocking get() trong background thread
+
+                if (bitmap != null) {
+                    WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+                    wallpaperManager.setBitmap(bitmap);
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "Đã đặt ảnh làm hình nền", Toast.LENGTH_SHORT).show());
+                } else {
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "Không thể đọc ảnh", Toast.LENGTH_SHORT).show());
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Lỗi khi đặt hình nền", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    public CompletableFuture<Boolean> passwordCheckAsync(int index) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        ImageDetailsObject image = imageList.get(index);
+
+        // if no password, complete immediately
+        if (!image.isPasswordProtected()) {
+            future.complete(true);
+            return future;
+        }
+
+        // otherwise show the dialog
+        PasswordDialogFragment dlg = PasswordDialogFragment.newInstance(image.getImageID());
+        dlg.setCancelable(false);
+        dlg.show(getSupportFragmentManager(), "PasswordDialog");
+
+        getSupportFragmentManager().setFragmentResultListener(
+                "password_result", this,
+                (requestKey, bundle) ->
+                        future.complete(bundle.getBoolean("password_correct", false))
+        );
+
+        return future;
     }
 }

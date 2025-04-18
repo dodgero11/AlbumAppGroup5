@@ -25,6 +25,7 @@
 
     <!-- image details -->
     <string name="nameLabel">Name</string>
+    <string name="passwordLabel">Password</string>
     <string name="descriptionLabel">Description</string>
     <string name="tagsLabel">Tags</string>
     <string name="tagsLabel2">(Tap to remove)</string>
@@ -33,10 +34,13 @@
     <string name="locationLabel">Location taken</string>
 
     <string name="nameHint">No image name</string>
+    <string name="passwordHint">No password</string>
     <string name="descriptionHint">No description</string>
     <string name="tagDefault">No tags</string>
     <string name="dateDefault">No information</string>
     <string name="locationHint">No location set</string>
 
     <string name="updateDetailsButton">Update</string>
+
+    <string name="setWallpaper">Set Wallpaper</string>
 </resources>
