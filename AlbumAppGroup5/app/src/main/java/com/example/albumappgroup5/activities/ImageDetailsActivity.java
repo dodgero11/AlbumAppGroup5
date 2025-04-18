@@ -106,6 +106,12 @@ public class ImageDetailsActivity extends AppCompatActivity {
             finish();
         }
         nameEdit.setText(details.getImageName());
+
+        // Set password if it exists
+        if (!database.getImagePassword(imageID).isEmpty()) {
+            passwordEdit.setText(database.getImagePassword(imageID));
+        }
+
         descriptionEdit.setText(details.getDescription());
         locationEdit.setText(details.getLocation());
         Date dateDetails = details.getTimeAdded();
