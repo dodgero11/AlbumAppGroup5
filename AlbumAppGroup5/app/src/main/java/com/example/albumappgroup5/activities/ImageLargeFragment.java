@@ -22,6 +22,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.models.ImageDetailsObject;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class ImageLargeFragment extends Fragment implements View.OnTouchListener {
     private static String imageID;
@@ -102,6 +103,13 @@ public class ImageLargeFragment extends Fragment implements View.OnTouchListener
 
             largeImageName.setText(tempImage.getImageName());
         }
+
+        FloatingActionButton button = view.findViewById(R.id.pipMode);
+        button.setOnClickListener(v -> {
+            largeImageName.setVisibility(View.GONE);
+            button.setVisibility(View.GONE);
+            getActivity().enterPictureInPictureMode();
+        });
         return view;
     }
 
