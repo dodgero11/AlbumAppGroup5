@@ -20,10 +20,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.ImageDetailsObject;
-import com.example.albumappgroup5.models.ImageModel;
 import com.example.albumappgroup5.models.AlbumModel;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnImageClickListener {
     static private List<ImageDetailsObject> imagesOfAlbum;
@@ -91,6 +91,13 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
             imagesOfAlbum.clear();
             for (String image : tempImageList) {
                 ImageDetailsObject tempObject = new ImageDetailsObject(image);
+
+                // Check for password
+                if (!database.getImagePassword(image).isEmpty()) {
+                    tempObject.setHasPassword(true);
+                    tempObject.setPasswordProtected(true);
+                }
+
                 imagesOfAlbum.add(tempObject);
             }
         } catch (Exception e) {
@@ -102,6 +109,19 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
     public void onImageClick(int position) {
         ImageDetailsObject image = imagesOfAlbum.get(position); // Get the clicked image
 
+        passwordCheckAsync(position)
+                .thenAccept(ok -> {
+                    requireActivity().runOnUiThread(() -> {
+                        if (ok) {
+                            openImageLargeFragment(image);
+                        } else {
+                            Toast.makeText(this.getContext(), "Incorrect password", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+    }
+
+    public void openImageLargeFragment(ImageDetailsObject image) {
         ImageLargeFragment imageLargeFragment = ImageLargeFragment.newInstance(
                 image.getImageID(),
                 "AlbumDetailFragment"
@@ -119,15 +139,27 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
 
     @Override
     public void onImageLongClick(int position) {
-        ImageDetailsObject selectedImage = imagesOfAlbum.get(position);
+        passwordCheckAsync(position)
+                .thenAccept(ok -> {
+                    requireActivity().runOnUiThread(() -> {
+                        if (ok) {
+                            thumbnailOrRemoval(position);
+                        } else {
+                            Toast.makeText(this.getContext(), "Incorrect password", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+    }
 
-        new AlertDialog.Builder(getContext())
+
+    public void thumbnailOrRemoval (int position) {
+            new AlertDialog.Builder(getContext())
                 .setTitle("Image Options")
                 .setItems(new CharSequence[]{"Make as album thumbnail", "Remove from album"}, (dialog, which) -> {
                     switch (which) {
                         case 0: // Set as album thumbnail
                             AlbumModel albumModel = new ViewModelProvider(requireActivity()).get(AlbumModel.class);
-                            albumModel.setAlbumThumbnail(nameOfAlbum, selectedImage.getImageID());
+                            albumModel.setAlbumThumbnail(nameOfAlbum, imagesOfAlbum.get(position).getImageID());
                             break;
 
                         case 1: // Delete
@@ -159,5 +191,29 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
             getActivity().findViewById(R.id.fragmentContainerBottom).setVisibility(View.VISIBLE);
         }
         super.onResume();
+    }
+
+    public CompletableFuture<Boolean> passwordCheckAsync(int index) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        ImageDetailsObject image = imagesOfAlbum.get(index);
+
+        // if no password, complete immediately
+        if (database.getImagePassword(image.getImageID()).isEmpty()) {
+            future.complete(true);
+            return future;
+        }
+
+        // otherwise show the dialog
+        PasswordDialogFragment dlg = PasswordDialogFragment.newInstance(image.getImageID());
+        dlg.setCancelable(false);
+        dlg.show(this.getParentFragmentManager(), "PasswordDialog");
+
+        this.getParentFragmentManager().setFragmentResultListener(
+                "password_result", this,
+                (requestKey, bundle) ->
+                        future.complete(bundle.getBoolean("password_correct", false))
+        );
+
+        return future;
     }
 }

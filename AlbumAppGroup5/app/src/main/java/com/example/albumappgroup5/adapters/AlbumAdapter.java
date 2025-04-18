@@ -15,9 +15,7 @@ import com.example.albumappgroup5.activities.DatabaseHandler;
 import com.example.albumappgroup5.models.AlbumModel;
 import com.example.albumappgroup5.models.AlbumObject;
 import com.example.albumappgroup5.models.ImageDetailsObject;
-import com.example.albumappgroup5.models.ImageModel;
 
-import java.util.Date;
 import java.util.List;
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHolder> {

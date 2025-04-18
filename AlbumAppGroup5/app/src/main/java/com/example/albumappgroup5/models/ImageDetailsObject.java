@@ -10,6 +10,9 @@ public class ImageDetailsObject implements Parcelable {
     String description;
     Date timeAdded;
     String location;
+    // Add password-related fields
+    private boolean hasPassword = false;
+    private boolean isPasswordProtected = false;
 
     public ImageDetailsObject(String imageID, String imageName, String description, Date timeAdded, String location) {
         this.imageID = imageID;
@@ -68,7 +71,8 @@ public class ImageDetailsObject implements Parcelable {
     public String getLocation() {
         return location;
     }
-
+    public void setHasPassword(boolean hasPassword) { this.hasPassword = hasPassword; }
+    public void setPasswordProtected(boolean passwordProtected) { isPasswordProtected = passwordProtected; }
     public void setImageName(String imageName) {
         this.imageName = imageName;
     }
@@ -81,6 +85,10 @@ public class ImageDetailsObject implements Parcelable {
     public void setLocation(String location) {
         this.location = location;
     }
+
+    // Check for existence of passwords and if locked
+    public boolean isPasswordProtected() { return isPasswordProtected; }
+    public boolean hasPassword() { return hasPassword; }
 
     public static final Creator<ImageDetailsObject> CREATOR = new Creator<ImageDetailsObject>() {
         @Override

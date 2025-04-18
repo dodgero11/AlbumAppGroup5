@@ -44,8 +44,6 @@ public class ImageLargeFragment extends Fragment implements View.OnTouchListener
     private PointF midPoint = new PointF();
     private float oldDist = 1f;
     private boolean imageLoaded = false;
-    private RectF imageBounds = new RectF();
-    private RectF viewBounds = new RectF();
 
     public static ImageLargeFragment newInstance(String imagePath, String cameFromOrigin) {
         ImageLargeFragment fragment = new ImageLargeFragment();

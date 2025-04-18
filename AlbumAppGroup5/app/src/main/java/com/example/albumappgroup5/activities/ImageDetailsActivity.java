@@ -35,7 +35,7 @@ public class ImageDetailsActivity extends AppCompatActivity {
     String imageID;
 
     // view variables
-    EditText nameEdit, descriptionEdit, locationEdit;
+    EditText nameEdit, passwordEdit, descriptionEdit, locationEdit;
     AutoCompleteTextView addTagEdit;
     TextView dateAdded;
     GridView tagsList;
@@ -82,6 +82,7 @@ public class ImageDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.image_details);
         // bind views
         nameEdit = findViewById(R.id.nameEdit);
+        passwordEdit = findViewById(R.id.passwordEdit);
         descriptionEdit = findViewById(R.id.descriptionEdit);
         locationEdit = findViewById(R.id.locationEdit);
         addTagEdit = findViewById(R.id.addTagEdit);
@@ -169,6 +170,15 @@ public class ImageDetailsActivity extends AppCompatActivity {
 
     void updateButtonFunction () {
         details.setImageName(nameEdit.getText().length() == 0 ? null : nameEdit.getText().toString());
+
+        // Password update
+        if (passwordEdit.getText().length() != 0) {
+            database.deleteImagePassword(imageID);
+            database.insertImagePassword(imageID, passwordEdit.getText().toString());
+        } else {
+            database.deleteImagePassword(imageID);
+        }
+
         details.setDescription(descriptionEdit.getText().length() == 0 ? null : descriptionEdit.getText().toString());
         details.setLocation(locationEdit.getText().length() == 0 ? null : locationEdit.getText().toString());
         if (database.updateImage(details))

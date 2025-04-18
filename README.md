@@ -10,10 +10,11 @@ Tasks to be done:
 
 
 Tasks in progress:
-- Khóa ảnh / album bằng password - ro11
+- Khóa album bằng password - ro11
 - move images to local storage - buggingNewbie
 
 Tasks completed: 
+- Khóa ảnh bằng password - ro11
 - Add search function - ro11
 - Detect duplicated images - ro11
 - Adding/Removing images to/from albums - ro11
@@ -27,3 +28,4 @@ Tasks completed:
 
 Tasks with bugs:
 - Zoom in/Zoom out in details mode - ro11
+- Fix set album thumbnail - ro11
