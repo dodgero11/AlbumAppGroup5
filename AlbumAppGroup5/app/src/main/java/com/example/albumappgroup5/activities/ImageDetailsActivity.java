@@ -66,6 +66,7 @@ public class ImageDetailsActivity extends AppCompatActivity {
             Log.e("activity error", "no imageID for image details activity");
             Toast.makeText(this, "Error showing image details", Toast.LENGTH_LONG
             ).show();
+            setResult(RESULT_CANCELED);
             finish();
         }
 
@@ -76,6 +77,7 @@ public class ImageDetailsActivity extends AppCompatActivity {
             Log.e("database error", "cannot access database");
             Toast.makeText(this, "Error showing image details", Toast.LENGTH_LONG
             ).show();
+            setResult(RESULT_CANCELED);
             finish();
         }
 
@@ -103,6 +105,7 @@ public class ImageDetailsActivity extends AppCompatActivity {
         if (details == null) {
             Toast.makeText(this, "Error showing image details", Toast.LENGTH_LONG
             ).show();
+            setResult(RESULT_CANCELED);
             finish();
         }
         nameEdit.setText(details.getImageName());
@@ -191,10 +194,12 @@ public class ImageDetailsActivity extends AppCompatActivity {
             Toast.makeText(this, "Details updated", Toast.LENGTH_SHORT).show();
         else {
             Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show();
+            setResult(RESULT_OK);
             finish();
             return;
         }
         if (deleteMarked.isEmpty() && addPending.isEmpty()) {
+            setResult(RESULT_OK);
             finish();
             return;
         }
@@ -214,6 +219,7 @@ public class ImageDetailsActivity extends AppCompatActivity {
             Toast.makeText(this, String.valueOf(failure) + (failure == 1 ? " tag" : " tags" ) + " failed to update", Toast.LENGTH_SHORT).show();
         }
 
+        setResult(RESULT_OK);
         finish();
     }
 }

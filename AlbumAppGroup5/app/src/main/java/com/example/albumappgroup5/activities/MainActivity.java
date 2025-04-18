@@ -204,6 +204,12 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 applySettings();
             }
         }
+        else if (requestCode == 1) { // 1 : the details activity
+            if (resultCode == RESULT_OK)
+            {
+                loadImagesFromStorage();
+            }
+        }
     }
 
     private void applySettings () // read preferences and apply changes
@@ -528,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                                     if (ok) {
                                         Intent detailsActivity = new Intent(this, ImageDetailsActivity.class);
                                         detailsActivity.putExtra("imageID", imageList.get(index).getImageID());
-                                        startActivity(detailsActivity);
+                                        startActivityForResult(detailsActivity, 1);
                                     } else {
                                         Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
                                     }
@@ -537,7 +543,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 } else {
                     Intent detailsActivity = new Intent(this, ImageDetailsActivity.class);
                     detailsActivity.putExtra("imageID", imageList.get(index).getImageID());
-                    startActivity(detailsActivity);
+                    startActivityForResult(detailsActivity, 1);
                 }
                 break;
             case "delete": // delete image
