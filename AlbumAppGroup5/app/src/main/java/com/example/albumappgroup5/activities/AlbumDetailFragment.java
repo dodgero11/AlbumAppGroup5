@@ -1,6 +1,8 @@
 package com.example.albumappgroup5.activities;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -160,6 +162,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
                         case 0: // Set as album thumbnail
                             AlbumModel albumModel = new ViewModelProvider(requireActivity()).get(AlbumModel.class);
                             albumModel.setAlbumThumbnail(nameOfAlbum, imagesOfAlbum.get(position).getImageID());
+                            saveThumbnail(nameOfAlbum, imagesOfAlbum.get(position).getImageID());
                             break;
 
                         case 1: // Delete
@@ -171,6 +174,13 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
                 .show();
     }
 
+    public void saveThumbnail(String albumName, String thumbnailPath) {
+        SharedPreferences sharedPref = getContext().getSharedPreferences("AlbumPreferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        // Sử dụng key là "thumbnail_<albumName>"
+        editor.putString("thumbnail_" + albumName, thumbnailPath);
+        editor.apply();
+    }
 
     private void showDeleteConfirmationDialog(int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
