@@ -443,6 +443,21 @@ public class DatabaseHandler {
         }
     }
 
+    public String getImageName(String imageID) {
+        // return null on error, empty string ("") if no name found, and name string otherwise
+        try (Cursor data = database.rawQuery("SELECT imageName FROM Image WHERE imageID = ?",
+                new String[]{imageID})) {
+            if (!data.moveToFirst())
+                return "";
+            else {
+                return data.getString(0);
+            }
+        } catch (SQLiteException e) {
+            Log.e("error", e.toString());
+        }
+        return null;
+    }
+
     public String getImagePassword (String imageID) {
     // return null on error, empty string ("") if no password found, and password string otherwise
         try (Cursor data = database.rawQuery("SELECT password FROM ImagePassword WHERE imageID = ?",

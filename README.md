@@ -5,14 +5,14 @@ Tasks to be done:
 - Cho vẽ / viết (markup) khi chỉnh sửa ảnh
 - Set vị trí cho ảnh dùng API location / bản đồ
 - Chọn 1 hoặc nhiều ảnh để export thành PDF
-- Cắt bớt 1 phần của ảnh (crop), xoay ảnh
 
 
 Tasks in progress:
+- Cắt bớt 1 phần của ảnh (crop), xoay ảnh - ro11
 - move images to local storage - buggingNewbie
-- Cho phép sort danh sách ảnh theo các tiêu chí (thời gian, nhãn, …) - ro11
 
 Tasks completed: 
+- Cho phép sort danh sách ảnh theo các tiêu chí (thời gian, tên ảnh, …) - ro11
 - Khóa ảnh/album bằng password - ro11
 - Add search function - ro11
 - Detect duplicated images - ro11

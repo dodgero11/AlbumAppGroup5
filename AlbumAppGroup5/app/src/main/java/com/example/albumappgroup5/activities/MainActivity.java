@@ -2,6 +2,7 @@ package com.example.albumappgroup5.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,6 +16,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 import android.view.View;
 import android.media.MediaScannerConnection;
@@ -50,6 +53,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +78,13 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
     // database handler
     DatabaseHandler database;
+
+    // Sorting variables
+    private static final int SORT_DATE_DESC = 0; // Newest first (default)
+    private static final int SORT_DATE_ASC = 1;  // Oldest first
+    private static final int SORT_NAME_ASC = 2;  // A-Z
+    private static final int SORT_NAME_DESC = 3; // Z-A
+    private int currentSortOrder = SORT_DATE_DESC; // Default sort order
 
     // Handling the result of the camera intent
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
@@ -181,6 +192,23 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             Intent settingsActivity = new Intent(this, AppSettings.class);
             startActivityForResult(settingsActivity, 0);
         });
+
+        // Add menu items to the toolbar
+        homeToolbar.inflateMenu(R.menu.main_menu);
+
+        // Handle menu item clicks
+        homeToolbar.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.action_sort) {
+                showSortingDialog();
+                return true;
+            }
+
+            return false;
+        });
+
+        loadSortOrderPreference(); // Load saved sort preference
 
         checkAndRequestPermissions();
 
@@ -354,9 +382,10 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 MediaStore.Images.Media.DATE_TAKEN // Date
         };
 
+        // Load all images first without specific sorting from MediaStore
         HashSet<String> hashSet = new HashSet<>();
 
-        Cursor cursor = getContentResolver().query(collection, projection, null, null, MediaStore.Images.Media.DATE_TAKEN + " DESC");
+        Cursor cursor = getContentResolver().query(collection, projection, null, null, null);
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 String imagePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
@@ -425,8 +454,57 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             cursor.close();
         }
 
+        // Now sort the imageList based on the selected sort order
+        sortImageList();
+
         adapter = new GalleryAdapter(this, imageList, this);
         recyclerView.setAdapter(adapter);
+    }
+
+    // New method to sort the imageList
+    private void sortImageList() {
+        // Update all images' names to match database
+        for (ImageDetailsObject image : imageList) {
+            image.setImageName(database.getImageName(image.getImageID()));
+        }
+
+        switch (currentSortOrder) {
+            case SORT_DATE_ASC:
+                // Sort by date, oldest first
+                Collections.sort(imageList, (img1, img2) -> {
+                    if (img1.getTimeAdded() == null || img2.getTimeAdded() == null)
+                        return 0;
+                    return img1.getTimeAdded().compareTo(img2.getTimeAdded());
+                });
+                break;
+
+            case SORT_DATE_DESC:
+                // Sort by date, newest first
+                Collections.sort(imageList, (img1, img2) -> {
+                    if (img1.getTimeAdded() == null || img2.getTimeAdded() == null)
+                        return 0;
+                    return img2.getTimeAdded().compareTo(img1.getTimeAdded());
+                });
+                break;
+
+            case SORT_NAME_ASC:
+                // Sort by name, A-Z
+                Collections.sort(imageList, (img1, img2) -> {
+                    String name1 = img1.getImageName() != null ? img1.getImageName() : "";
+                    String name2 = img2.getImageName() != null ? img2.getImageName() : "";
+                    return name1.compareToIgnoreCase(name2);
+                });
+                break;
+
+            case SORT_NAME_DESC:
+                // Sort by name, Z-A
+                Collections.sort(imageList, (img1, img2) -> {
+                    String name1 = img1.getImageName() != null ? img1.getImageName() : "";
+                    String name2 = img2.getImageName() != null ? img2.getImageName() : "";
+                    return name2.compareToIgnoreCase(name1);
+                });
+                break;
+        }
     }
 
     // Click on image to go to details
@@ -700,5 +778,53 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         );
 
         return future;
+    }
+
+    // Sorting
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_sort) {
+            showSortingDialog();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showSortingDialog() {
+        // Create a bottom sheet or alert dialog with sorting options
+        String[] sortOptions = {"Newest First", "Oldest First", "Name (A-Z)", "Name (Z-A)"};
+
+        new AlertDialog.Builder(this)
+                .setTitle("Sort Images By")
+                .setSingleChoiceItems(sortOptions, currentSortOrder, (dialog, which) -> {
+                    currentSortOrder = which;
+                    saveCurrentSortOrder(); // Save user preference
+                    loadImagesFromStorage(); // Reload with new sort order
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    // Save sort preference
+    private void saveCurrentSortOrder() {
+        SharedPreferences preferences = getSharedPreferences(Global.SETTINGS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("sort_order", currentSortOrder);
+        editor.apply();
+    }
+
+    // Load sort preference
+    private void loadSortOrderPreference() {
+        SharedPreferences preferences = getSharedPreferences(Global.SETTINGS, MODE_PRIVATE);
+        currentSortOrder = preferences.getInt("sort_order", SORT_DATE_DESC); // Default to newest first
     }
 }
