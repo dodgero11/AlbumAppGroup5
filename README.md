@@ -6,15 +6,14 @@ Tasks to be done:
 - Set vị trí cho ảnh dùng API location / bản đồ
 - Chọn 1 hoặc nhiều ảnh để export thành PDF
 - Cắt bớt 1 phần của ảnh (crop), xoay ảnh
-- Cho phép sort danh sách ảnh theo các tiêu chí (thời gian, nhãn, …)
 
 
 Tasks in progress:
-- Khóa album bằng password - ro11
 - move images to local storage - buggingNewbie
+- Cho phép sort danh sách ảnh theo các tiêu chí (thời gian, nhãn, …) - ro11
 
 Tasks completed: 
-- Khóa ảnh bằng password - ro11
+- Khóa ảnh/album bằng password - ro11
 - Add search function - ro11
 - Detect duplicated images - ro11
 - Adding/Removing images to/from albums - ro11
@@ -28,4 +27,3 @@ Tasks completed:
 
 Tasks with bugs:
 - Zoom in/Zoom out in details mode - ro11
-- Fix set album thumbnail - ro11
