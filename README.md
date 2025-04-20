@@ -8,10 +8,10 @@ Tasks to be done:
 
 
 Tasks in progress:
-- Cắt bớt 1 phần của ảnh (crop), xoay ảnh - ro11
 - move images to local storage - buggingNewbie
 
 Tasks completed: 
+- Cắt bớt 1 phần của ảnh (crop), xoay ảnh - ro11
 - Cho phép sort danh sách ảnh theo các tiêu chí (thời gian, tên ảnh, …) - ro11
 - Khóa ảnh/album bằng password - ro11
 - Add search function - ro11

@@ -45,5 +45,6 @@ dependencies {
     implementation("com.caverock:androidsvg:1.4")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
+
     tasks.register("testClasses")
 }

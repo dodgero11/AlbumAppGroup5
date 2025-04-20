@@ -186,6 +186,16 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             }
         });
 
+        // Listen for the result when ImageEditorFragment is closed
+        getSupportFragmentManager().setFragmentResultListener("image_editor_closed", this, new FragmentResultListener() {
+            @Override
+            public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+                if (result.getBoolean("refresh_images", false)) {
+                    reloadGalleryView();
+                }
+            }
+        });
+
         // toolbar button to open settings
         Toolbar homeToolbar = findViewById(R.id.homeToolbar);
         homeToolbar.setNavigationOnClickListener(v -> {
@@ -672,6 +682,25 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                     setAsWallpaperWithGlide(imageList.get(index).getImageID());
                 }
                 break;
+            case "edit":
+                ImageDetailsObject editImage = imageList.get(index); // Get the clicked image
+
+                // Check if image has password protection (similar to your other cases)
+                if (editImage.isPasswordProtected()) {
+                    passwordCheckAsync(index)
+                            .thenAccept(ok -> {
+                                runOnUiThread(() -> {
+                                    if (ok) {
+                                        openImageEditorFragment(editImage.getImageID());
+                                    } else {
+                                        Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            });
+                } else {
+                    openImageEditorFragment(editImage.getImageID());
+                }
+                break;
             default:
                 break;
         }
@@ -826,5 +855,20 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     private void loadSortOrderPreference() {
         SharedPreferences preferences = getSharedPreferences(Global.SETTINGS, MODE_PRIVATE);
         currentSortOrder = preferences.getInt("sort_order", SORT_DATE_DESC); // Default to newest first
+    }
+
+    // Edit Image Fragment
+    private void openImageEditorFragment(String imageId) {
+        ImageEditorFragment imageEditorFragment = ImageEditorFragment.newInstance(imageId);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, imageEditorFragment);
+        transaction.addToBackStack("IMAGE_EDITOR");
+        transaction.commit();
+
+        // Hide RecyclerView and buttons when showing the editor fragment
+        findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
+        findViewById(R.id.fragmentContainerBottom).setVisibility(View.GONE);
+        findViewById(R.id.homeToolbar).setVisibility(View.GONE);
+        findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
     }
 }

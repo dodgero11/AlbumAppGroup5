@@ -43,4 +43,5 @@
     <string name="updateDetailsButton">Update</string>
 
     <string name="setWallpaper">Set Wallpaper</string>
+    <string name="editImage">Edit Image</string>
 </resources>
