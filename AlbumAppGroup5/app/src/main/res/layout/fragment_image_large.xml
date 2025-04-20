@@ -27,8 +27,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginBottom="96dp"
+        android:layout_marginTop="20dp"
         app:backgroundTint="?attr/colorAccent"
         app:fabSize="normal"
-        app:srcCompat="@drawable/plus_icon" />
+        app:srcCompat="" />
 </FrameLayout>

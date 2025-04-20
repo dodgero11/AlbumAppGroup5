@@ -4,6 +4,7 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -11,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.FrameLayout.LayoutParams;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,7 +22,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
-import com.bumptech.glide.request.RequestOptions;
 import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.models.ImageDetailsObject;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -32,6 +34,8 @@ public class ImageLargeFragment extends Fragment implements View.OnTouchListener
     private Matrix savedMatrix = new Matrix();
     private float scaleFactor = 1.0f;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private TextView largeImageName;
+    private FloatingActionButton pipButton;
     private DatabaseHandler database;
 
     // Constants for touch modes
@@ -62,7 +66,7 @@ public class ImageLargeFragment extends Fragment implements View.OnTouchListener
         database = DatabaseHandler.getInstance(getContext());
 
         imageView = view.findViewById(R.id.imageViewDetail);
-        TextView largeImageName = view.findViewById(R.id.largeImageName);
+        largeImageName = view.findViewById(R.id.largeImageName);
         swipeRefreshLayout = getActivity().findViewById(R.id.swipeRefreshLayout);
 
         // Initialize touch listeners and scale detector
@@ -104,12 +108,8 @@ public class ImageLargeFragment extends Fragment implements View.OnTouchListener
             largeImageName.setText(tempImage.getImageName());
         }
 
-        FloatingActionButton button = view.findViewById(R.id.pipMode);
-        button.setOnClickListener(v -> {
-            largeImageName.setVisibility(View.GONE);
-            button.setVisibility(View.GONE);
-            getActivity().enterPictureInPictureMode();
-        });
+        pipButton = view.findViewById(R.id.pipMode);
+        pipButton.setOnClickListener(v -> getActivity().enterPictureInPictureMode());
         return view;
     }
 
@@ -290,6 +290,32 @@ public class ImageLargeFragment extends Fragment implements View.OnTouchListener
         if (getArguments() != null && "mainActivity".equals(getArguments().getString("cameFrom"))) {
             result.putBoolean("refresh_images", true);
             getParentFragmentManager().setFragmentResult("image_detail_closed", result);
+        }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+        float density = 2.625F; // screen density to convert dp to pixels
+        if (getContext() != null)
+            density = getContext().getResources().getDisplayMetrics().density;
+
+        if (isInPictureInPictureMode) {
+            largeImageName.setVisibility(View.GONE);
+            pipButton.setVisibility(View.GONE);
+            LayoutParams params = new LayoutParams((int) (230 * density), (int) (130 * density));
+            params.setMargins(0, 0, 0, 0);
+            imageView.setLayoutParams(params);
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            Toast.makeText(getContext(), "enter pip", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            largeImageName.setVisibility(View.VISIBLE);
+            pipButton.setVisibility(View.VISIBLE);
+            LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params.setMargins(0, (int) (80 * density), 0 ,0);
+            imageView.setLayoutParams(params);
+            imageView.setScaleType(ImageView.ScaleType.MATRIX);
+            Toast.makeText(getContext(), "exit pip", Toast.LENGTH_SHORT).show();
         }
     }
 }
