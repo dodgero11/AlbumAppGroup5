@@ -46,6 +46,7 @@ import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.AlbumModel;
 import com.example.albumappgroup5.models.ImageDetailsObject;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -150,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
         fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
+        fragmentTransaction.hide(buttonContainer);
         fragmentTransaction.commit();
 
         imageOptionsFragment = ImageOptionsFragment.newInstance();
@@ -223,6 +225,29 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         checkAndRequestPermissions();
 
         applySettings(); // load settings from previous session (if available)
+
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+
+        // Set up a listener for navigation item selection
+        bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                int itemId = item.getItemId(); // obtain the selected item ID from your source
+
+                if (itemId == R.id.nav_image ) {
+                    returnHome();
+                } else if (itemId == R.id.nav_album) {
+                    openAlbum();
+                } else if (itemId == R.id.nav_camera) {
+                    getCameraPermission();
+                }else if (itemId == R.id.nav_search){
+                    imageSearch();
+                } else {
+                   return false;
+                }
+                return true;
+            }
+        });
     }
 
     @Override
@@ -283,6 +308,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
 
         fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
+        fragmentTransaction.hide(buttonContainer);
         fragmentTransaction.commit();
 
         loadImagesFromStorage();
@@ -294,12 +320,14 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         // Make sure to show the main UI elements (RecyclerView and the bottom container).
         findViewById(R.id.recyclerViewImages).setVisibility(View.VISIBLE);
+        findViewById(R.id.bottom_navigation).setVisibility(View.VISIBLE);
 
         // Create the button container fragment again.
         buttonContainer = ActionButtonFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
         fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
+        fragmentTransaction.hide(buttonContainer);
         fragmentTransaction.commit();
 
         // Optionally hide the fragment container if it overlaps.
@@ -308,6 +336,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
     private void imageSearch() {
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
+        findViewById(R.id.bottom_navigation).setVisibility(View.VISIBLE);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.commit();
@@ -556,11 +585,13 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.fragmentContainerBottom).setVisibility(View.GONE);
         findViewById(R.id.homeToolbar).setVisibility(View.GONE);
         findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
+        findViewById(R.id.bottom_navigation).setVisibility(View.GONE);
     }
 
     // Long click to open options menu
     @Override
     public void onImageLongClick(int position) {
+        findViewById(R.id.bottom_navigation).setVisibility(View.GONE);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         String currentFragment;
@@ -586,6 +617,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     // Go to albums section
     private void openAlbum() {
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
+        findViewById(R.id.bottom_navigation).setVisibility(View.VISIBLE);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.commit();
@@ -661,7 +693,9 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                     fragmentTransaction.replace(R.id.fragmentContainerBottom, buttonContainer);
                     fragmentTransaction.addToBackStack("BUTTON_CONTAINER");
                 }
+                fragmentTransaction.hide(buttonContainer);
                 fragmentTransaction.commit();
+                findViewById(R.id.bottom_navigation).setVisibility(View.VISIBLE);
                 break;
             case "setWallpaper":
                 ImageDetailsObject setWallPaperImage = imageList.get(index); // Get the clicked image
@@ -699,6 +733,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                             });
                 } else {
                     openImageEditorFragment(editImage.getImageID());
+                    findViewById(R.id.bottom_navigation).setVisibility(View.GONE);
                 }
                 break;
             default:
@@ -870,5 +905,17 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.fragmentContainerBottom).setVisibility(View.GONE);
         findViewById(R.id.homeToolbar).setVisibility(View.GONE);
         findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
+        findViewById(R.id.bottom_navigation).setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // When the back button is pressed, make sure the Bottom Navigation is visible
+        if (findViewById(R.id.bottom_navigation).getVisibility() == View.GONE) {
+            findViewById(R.id.bottom_navigation).setVisibility(View.VISIBLE);
+            super.onBackPressed();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
