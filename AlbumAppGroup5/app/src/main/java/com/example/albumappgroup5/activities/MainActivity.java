@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.WallpaperManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -15,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -388,10 +390,15 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
     private void checkAndRequestPermissions() {
         if (Build.VERSION.SDK_INT >= 30) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE},
-                        100);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                Uri uri = Uri.parse("package:com.example.albumappgroup5");
+
+                startActivity(
+                        new Intent(
+                                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                                uri
+                        )
+                );
             }
         }
 
@@ -670,19 +677,13 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 // remove image (only in-app, not yet in internal storage)
 
                 // delete file (not working)
-//                if (Environment.isExternalStorageManager()) {
-//                    Log.v("info", "perms ok");
-//                }
-//                else {
-//                    Log.v("info", "perms denied");
-//                }
-//                File file = new File(imageList.get(index).getImageID());
-//                if (file.delete()) {
-//                    Log.v("info", "delete ok");
-//                }
-//                else {
-//                    Log.v("info", "delete fail");
-//                }
+                File file = new File(imageList.get(index).getImageID());
+                if (file.delete()) {
+                    Toast.makeText(this, "Image deleted", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(this, "Failed to delete image", Toast.LENGTH_SHORT).show();
+                }
                 database.deleteImage(imageList.get(index).getImageID()); // delete all image info from db
                 imageList.remove(index);
                 adapter.notifyItemRemoved(index);
@@ -917,5 +918,11 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Toast.makeText(this, "code = " + requestCode, Toast.LENGTH_SHORT).show();
     }
 }
