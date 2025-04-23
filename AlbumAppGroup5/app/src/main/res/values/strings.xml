@@ -44,4 +44,7 @@
 
     <string name="setWallpaper">Set Wallpaper</string>
     <string name="editImage">Edit Image</string>
+
+    <!-- main activity toolbar menu -->
+    <string name="actionSort">Sort</string>
 </resources>
