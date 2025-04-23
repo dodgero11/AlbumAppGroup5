@@ -919,10 +919,4 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             super.onBackPressed();
         }
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Toast.makeText(this, "code = " + requestCode, Toast.LENGTH_SHORT).show();
-    }
 }
