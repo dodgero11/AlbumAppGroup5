@@ -536,25 +536,36 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 }
                 ImageDetailsObject tempImage = new ImageDetailsObject(imagePath, imageName, null, timeAddedDate, imagePath);
 
-                // Kiểm tra nếu mật khẩu ảnh tồn tại trong cơ sở dữ liệu
-                String tempPassword = database.getImagePassword(tempImage.getImageID());
+// Kiểm tra xem ảnh có tồn tại trên bộ nhớ không
+                File imageFile = new File(imagePath);
+                if (imageFile.exists()) {
+                    // Kiểm tra nếu mật khẩu ảnh tồn tại trong cơ sở dữ liệu
+                    String tempPassword = database.getImagePassword(tempImage.getImageID());
 
-                // Nếu tồn tại mật khẩu, thiết lập thông tin bảo vệ mật khẩu
-                if (!tempPassword.equals("")) {
-                    tempImage.setHasPassword(true);
-                    tempImage.setPasswordProtected(true);
-                    // Không thiết lập mật khẩu thực tế - nó ở lại trong cơ sở dữ liệu
+                    // Nếu tồn tại mật khẩu, thiết lập thông tin bảo vệ mật khẩu
+                    if (!tempPassword.equals("")) {
+                        tempImage.setHasPassword(true);
+                        tempImage.setPasswordProtected(true);
+                        // Không thiết lập mật khẩu thực tế - nó ở lại trong cơ sở dữ liệu
+                    } else {
+                        // Nếu không có, thêm ảnh mới vào cơ sở dữ liệu
+                        try {
+                            database.insertImage(tempImage);
+                        } catch (Exception e) {
+                            Log.e("error", e.toString());
+                        }
+                    }
+
+                    // Thêm ảnh vào danh sách nếu ảnh tồn tại
+                    imageList.add(tempImage);
                 } else {
-                    // Nếu không có, thêm ảnh mới vào cơ sở dữ liệu
+                    // Nếu ảnh không tồn tại trên bộ nhớ, có thể xóa nó khỏi cơ sở dữ liệu
                     try {
-                        database.insertImage(tempImage);
+                        database.deleteImage(tempImage.getImageID()); // Xóa ảnh khỏi DB nếu không còn trên bộ nhớ
                     } catch (Exception e) {
-                        Log.e("error", e.toString());
+                        Log.e("error", "Error deleting missing image from database: " + e.toString());
                     }
                 }
-
-                // Thêm ảnh vào danh sách
-                imageList.add(tempImage);
 
             }
             cursor.close();
