@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     private GalleryAdapter adapter;
     private List<ImageDetailsObject> imageList;
     private String currentPhotoPath;
+    private String currentActiveFragment = null; // Will store fragment tag
 
     // fragments variable
     ActionButtonFragment buttonContainer;
@@ -131,6 +132,8 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+
         database = DatabaseHandler.getInstance(this);
 
         // try to create database on first start
@@ -176,6 +179,8 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
                 if (result.getBoolean("refresh_images", false)) {
+                    currentActiveFragment = null;
+                    bottomNav.setSelectedItemId(R.id.nav_image);
                     reloadGalleryView();
                 }
             }
@@ -185,6 +190,8 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
                 if (result.getBoolean("refresh_images", false)) {
+                    currentActiveFragment = null;
+                    bottomNav.setSelectedItemId(R.id.nav_image);
                     reloadGalleryView();
                 }
             }
@@ -195,12 +202,27 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
                 if (result.getBoolean("refresh_images", false)) {
+                    currentActiveFragment = null;
+                    // Set highlighted button to image hub
+                    bottomNav.setSelectedItemId(R.id.nav_image);
                     reloadGalleryView();
                 }
             }
         });
 
-        // toolbar button to open settings
+        // Listen for the result when ImageSearchFragment is closed
+        getSupportFragmentManager().setFragmentResultListener("image_search_closed", this, new FragmentResultListener() {
+                @Override
+                public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+                    if (result.getBoolean("refresh_images", false)) {
+                        currentActiveFragment = null;
+                        bottomNav.setSelectedItemId(R.id.nav_image);
+                        reloadGalleryView();
+                    }
+            }
+        });
+
+                // toolbar button to open settings
         Toolbar homeToolbar = findViewById(R.id.homeToolbar);
         homeToolbar.setNavigationOnClickListener(v -> {
             Intent settingsActivity = new Intent(this, AppSettings.class);
@@ -228,8 +250,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         applySettings(); // load settings from previous session (if available)
 
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
-
         // Set up a listener for navigation item selection
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -242,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                     openAlbum();
                 } else if (itemId == R.id.nav_camera) {
                     getCameraPermission();
-                }else if (itemId == R.id.nav_search){
+                } else if (itemId == R.id.nav_search){
                     imageSearch();
                 } else {
                    return false;
@@ -336,12 +356,37 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         findViewById(R.id.fragmentContainer).setVisibility(View.GONE);
     }
 
-    private void imageSearch() {
+    // Go to albums section
+    private void openAlbum() {
+        // Check if album is already open
+        if ("album_fragment".equals(currentActiveFragment)) {
+            return;
+        }
+        // Set current active fragment to album
+        currentActiveFragment = "album_fragment";
+
         findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
         findViewById(R.id.bottom_navigation).setVisibility(View.VISIBLE);
 
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.commit();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, AlbumCollectionFragment.newInstance(albumModel, imageList));
+        transaction.addToBackStack(null);
+        transaction.commit();
+
+        // Show the fragment container
+        findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
+    }
+
+    private void imageSearch() {
+        // Check if album is already open
+        if ("image_search_fragment".equals(currentActiveFragment)) {
+            return;
+        }
+        // Set current active fragment to album
+        currentActiveFragment = "image_search_fragment";
+
+        findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
+        findViewById(R.id.bottom_navigation).setVisibility(View.VISIBLE);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, ImageSearchFragment.newInstance());
@@ -619,23 +664,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
         }
         fragmentTransaction.commit();
         imageOptionsFragment.changeIndex(position);
-    }
-
-    // Go to albums section
-    private void openAlbum() {
-        findViewById(R.id.recyclerViewImages).setVisibility(View.GONE);
-        findViewById(R.id.bottom_navigation).setVisibility(View.VISIBLE);
-
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.commit();
-
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentContainer, AlbumCollectionFragment.newInstance(albumModel, imageList));
-        transaction.addToBackStack(null);
-        transaction.commit();
-
-        // Show the fragment container
-        findViewById(R.id.fragmentContainer).setVisibility(View.VISIBLE);
     }
 
     private void getCameraPermission() {

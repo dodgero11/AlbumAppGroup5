@@ -116,4 +116,13 @@ public class ImageSearchFragment extends Fragment {
         }
         adapter.notifyDataSetChanged();
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Send a message to the main activity to refresh the gallery
+        Bundle result = new Bundle();
+        result.putBoolean("refresh_images", true);
+        getParentFragmentManager().setFragmentResult("image_search_closed", result);
+    }
 }

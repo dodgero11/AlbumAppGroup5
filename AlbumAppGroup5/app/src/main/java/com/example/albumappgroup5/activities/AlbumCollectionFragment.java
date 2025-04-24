@@ -145,7 +145,6 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
                     requireActivity().runOnUiThread(() -> {
                         if (ok) {
                             openAlbum(albumName);
-                            getActivity().findViewById(R.id.bottom_navigation).setVisibility(View.GONE);
                         } else {
                             Toast.makeText(this.getContext(), "Incorrect password", Toast.LENGTH_SHORT).show();
                         }
@@ -176,7 +175,6 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
                     requireActivity().runOnUiThread(() -> {
                         if (ok) {
                             openDialogs(album);
-                            getActivity().findViewById(R.id.bottom_navigation).setVisibility(View.GONE);
                         } else {
                             Toast.makeText(this.getContext(), "Incorrect password", Toast.LENGTH_SHORT).show();
                         }
@@ -257,9 +255,9 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
 
     // Destroy current fragment and goes back to main
     @Override
-    public void onDestroyView() {
+    public void onDestroy() {
         Bundle args = new Bundle();
-        super.onDestroyView();
+        super.onDestroy();
 
         if (getActivity() != null && backToMain) {
             args.putBoolean("refresh_images", true);
