@@ -434,19 +434,6 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     }
 
     private void checkAndRequestPermissions() {
-        if (Build.VERSION.SDK_INT >= 30) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                Uri uri = Uri.parse("package:com.example.albumappgroup5");
-
-                startActivity(
-                        new Intent(
-                                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                                uri
-                        )
-                );
-            }
-        }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_STORAGE_PERMISSION);
@@ -701,20 +688,32 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                     startActivityForResult(detailsActivity, 1);
                 }
                 break;
-            case "delete": // delete image
-                // remove image (only in-app, not yet in internal storage)
 
-                // delete file (not working)
+            case "delete": // delete image
+                if (Build.VERSION.SDK_INT >= 30) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                        Uri uri = Uri.parse("package:com.example.albumappgroup5");
+
+                        startActivityForResult(
+                                new Intent(
+                                        Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                                        uri
+                                ), 2
+                        );
+                    }
+                }
+
                 File file = new File(imageList.get(index).getImageID());
                 if (file.delete()) {
+                    database.deleteImage(imageList.get(index).getImageID()); // delete all image info from db
+                    imageList.remove(index);
+                    adapter.notifyItemRemoved(index);
                     Toast.makeText(this, "Image deleted", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    Toast.makeText(this, "Failed to delete image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to delete image.\nCheck if permission is granted.", Toast.LENGTH_SHORT).show();
                 }
-                database.deleteImage(imageList.get(index).getImageID()); // delete all image info from db
-                imageList.remove(index);
-                adapter.notifyItemRemoved(index);
+
             case "cancel": // close and destroy the options fragment
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
