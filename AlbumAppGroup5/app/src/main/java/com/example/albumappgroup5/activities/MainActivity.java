@@ -4,6 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.WallpaperManager;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -711,24 +713,58 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     if (!Environment.isExternalStorageManager()) {
                         Uri uri = Uri.parse("package:" + getPackageName());
-                        Toast.makeText(this, "uri"+ uri, Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(this, "Yêu cầu cấp quyền truy cập toàn bộ bộ nhớ", Toast.LENGTH_SHORT).show();
                         startActivityForResult(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri), 2);
                         break;
                     }
                 }
 
-                File file = new File(imageList.get(index).getImageID());
-                if (file.delete()) {
-                    database.deleteImage(imageList.get(index).getImageID()); // delete from db
+                String imagePath = imageList.get(index).getImageID();
+                ContentResolver contentResolver = getContentResolver();
+
+                // Tìm content Uri của ảnh trong MediaStore (áp dụng cho Android Q+)
+                Uri imageUri = null;
+                String[] projection = {MediaStore.Images.Media._ID};
+                String selection = MediaStore.Images.Media.DATA + "=?";
+                String[] selectionArgs = new String[]{imagePath};
+
+                Cursor cursor = contentResolver.query(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null
+                );
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+                    imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    cursor.close();
+                }
+
+                boolean deleted = false;
+                if (imageUri != null) {
+                    int rows = contentResolver.delete(imageUri, null, null);
+                    deleted = rows > 0;
+                } else {
+                    // Trường hợp không lấy được uri, thử xóa trực tiếp và cập nhật MediaStore
+                    File file = new File(imagePath);
+                    if (file.delete()) {
+                        MediaScannerConnection.scanFile(this, new String[]{imagePath}, null, null);
+                        deleted = true;
+                    }
+                }
+
+                if (deleted) {
+                    database.deleteImage(imagePath); // delete from DB
                     imageList.remove(index);
                     adapter.notifyItemRemoved(index);
+                    Toast.makeText(this, "Image deleted", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(this, "Failed to delete image.\nCheck if permission is granted.", Toast.LENGTH_SHORT).show();
                 }
-
-                // Fallthrough fix: ensure break is here to not run next case accidentally
                 break;
+
 
 
             case "cancel": // close and destroy the options fragment
