@@ -534,37 +534,28 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 if (timeAddedDate == null) {
                     timeAddedDate = new Date();
                 }
+                ImageDetailsObject tempImage = new ImageDetailsObject(imagePath, imageName, null, timeAddedDate, imagePath);
 
-//                String imageHash = getImageHash(imagePath);
-//
-//                if (hashSet.contains(imageHash)) {
-//                    Log.d("Duplicates", "Duplicate found: " + imagePath);
-//                }
-//                else {
-//                    hashSet.add(imageHash);
-//
-////                     Create image object
-                    ImageDetailsObject tempImage = new ImageDetailsObject(imagePath, imageName, null, timeAddedDate, imagePath);
-//
-//                    // Check if image password exists in database
-//                    String tempPassword = database.getImagePassword(tempImage.getImageID());
-//
-//                    // If it exists, use password info from database
-//                    if (!tempPassword.equals("")) {
-//                        tempImage.setHasPassword(true);
-//                        tempImage.setPasswordProtected(true);
-//                        // Don't set the actual password - that stays in the database
-//                    } else {
-//                        // Insert as new image if it doesn't exist
-//                        try {
-//                            database.insertImage(tempImage);
-//                        } catch (Exception e) {
-//                            Log.e("error", e.toString());
-//                        }
-//                    }
-//
-                    imageList.add(tempImage);
-//                }
+                // Kiểm tra nếu mật khẩu ảnh tồn tại trong cơ sở dữ liệu
+                String tempPassword = database.getImagePassword(tempImage.getImageID());
+
+                // Nếu tồn tại mật khẩu, thiết lập thông tin bảo vệ mật khẩu
+                if (!tempPassword.equals("")) {
+                    tempImage.setHasPassword(true);
+                    tempImage.setPasswordProtected(true);
+                    // Không thiết lập mật khẩu thực tế - nó ở lại trong cơ sở dữ liệu
+                } else {
+                    // Nếu không có, thêm ảnh mới vào cơ sở dữ liệu
+                    try {
+                        database.insertImage(tempImage);
+                    } catch (Exception e) {
+                        Log.e("error", e.toString());
+                    }
+                }
+
+                // Thêm ảnh vào danh sách
+                imageList.add(tempImage);
+
             }
             cursor.close();
         }
