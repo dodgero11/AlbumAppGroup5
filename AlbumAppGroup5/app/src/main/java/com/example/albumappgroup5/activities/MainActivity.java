@@ -69,6 +69,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener, ImageActivityCallback, SimpleMessageCallback {
     private static final int REQUEST_STORAGE_PERMISSION = 100;
     private static final int REQUEST_CAMERA_PERMISSION = 101;
+    private static final int  REQUEST_MANAGE_STORAGE_PERMISSION=103;
     private AlbumModel albumModel;
     private RecyclerView recyclerView;
     private GalleryAdapter adapter;
@@ -435,19 +436,36 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
     private void checkAndRequestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+            // Yêu cầu quyền READ_MEDIA_IMAGES
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_STORAGE_PERMISSION);
             } else {
                 loadImagesFromStorage();
             }
-        } else {
+
+            // Kiểm tra quyền xóa ảnh toàn bộ bộ nhớ (MANAGE_EXTERNAL_STORAGE)
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, REQUEST_MANAGE_STORAGE_PERMISSION); // Bạn nên định nghĩa hằng số này
+            }
+
+        } else { // Trước Android 13
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
             } else {
                 loadImagesFromStorage();
             }
+
+            // Kiểm tra quyền MANAGE_EXTERNAL_STORAGE nếu Android >= 11
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, REQUEST_MANAGE_STORAGE_PERMISSION);
+            }
         }
     }
+
 
     // Load images from internal storage
     private void loadImagesFromStorage() {
@@ -506,7 +524,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 else {
                     hashSet.add(imageHash);
 
-                    // Create image object
+//                     Create image object
                     ImageDetailsObject tempImage = new ImageDetailsObject(imagePath, imageName, null, timeAddedDate, imagePath);
 
                     // Check if image password exists in database
@@ -689,30 +707,29 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 }
                 break;
 
-            case "delete": // delete image
-                if (Build.VERSION.SDK_INT >= 30) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                        Uri uri = Uri.parse("package:com.example.albumappgroup5");
+            case "delete":
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (!Environment.isExternalStorageManager()) {
+                        Uri uri = Uri.parse("package:" + getPackageName());
+                        Toast.makeText(this, "uri"+ uri, Toast.LENGTH_SHORT).show();
 
-                        startActivityForResult(
-                                new Intent(
-                                        Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                                        uri
-                                ), 2
-                        );
+                        startActivityForResult(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri), 2);
+                        break;
                     }
                 }
 
                 File file = new File(imageList.get(index).getImageID());
                 if (file.delete()) {
-                    database.deleteImage(imageList.get(index).getImageID()); // delete all image info from db
+                    database.deleteImage(imageList.get(index).getImageID()); // delete from db
                     imageList.remove(index);
                     adapter.notifyItemRemoved(index);
-                    Toast.makeText(this, "Image deleted", Toast.LENGTH_SHORT).show();
-                }
-                else {
+                } else {
                     Toast.makeText(this, "Failed to delete image.\nCheck if permission is granted.", Toast.LENGTH_SHORT).show();
                 }
+
+                // Fallthrough fix: ensure break is here to not run next case accidentally
+                break;
+
 
             case "cancel": // close and destroy the options fragment
                 FragmentManager fragmentManager = getSupportFragmentManager();
