@@ -157,7 +157,7 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
     public void thumbnailOrRemoval (int position) {
             new AlertDialog.Builder(getContext())
                 .setTitle("Image Options")
-                .setItems(new CharSequence[]{"Make as album thumbnail", "Remove from album"}, (dialog, which) -> {
+                .setItems(new CharSequence[]{"Set image as album's thumbnail", "Remove from album"}, (dialog, which) -> {
                     switch (which) {
                         case 0: // Set as album thumbnail
                             AlbumModel albumModel = new ViewModelProvider(requireActivity()).get(AlbumModel.class);
@@ -185,14 +185,23 @@ public class AlbumDetailFragment extends Fragment implements GalleryAdapter.OnIm
     private void showDeleteConfirmationDialog(int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Delete Image")
-                .setMessage("Are you sure you want to delete this image?")
+                .setMessage("Are you sure you want to remove this image from the album?")
                 .setPositiveButton("Yes", (dialog, which) -> {
+                    // Lưu lại ID trước khi xóa khỏi danh sách
+                    String imageID = imagesOfAlbum.get(position).getImageID();
                     imagesOfAlbum.remove(position);
+
+                    // Xóa khỏi database
+                    database.removeFromAlbum(imageID, database.getAlbumID(nameOfAlbum));
+
+                    // Cập nhật UI
                     adapter.notifyItemRemoved(position);
+                    Toast.makeText(getContext(), "Image removed from album", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("No", null)
                 .show();
     }
+
 
     // Resume current fragment
     @Override

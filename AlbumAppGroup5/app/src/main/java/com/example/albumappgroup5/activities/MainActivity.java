@@ -246,9 +246,14 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 return true;
             }
             if (id == R.id.action_deleteDuplicate) {
+                if (!checkDeletePermission()) {
+                    return true;  // Nếu không có quyền, không làm gì và thoát
+                }
+
                 // Chạy hàm deleteDuplicateImages trên background thread
                 ExecutorService executor = Executors.newSingleThreadExecutor();
                 executor.execute(() -> {
+                    // Xóa các ảnh trùng lặp
                     deleteDuplicateImages();
 
                     // Cập nhật lại UI sau khi hoàn thành thao tác xóa ảnh
@@ -256,10 +261,14 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                         loadImagesFromStorage();  // Tải lại hình ảnh sau khi đã xóa
                         Toast.makeText(this, "Duplicate images deleted.", Toast.LENGTH_SHORT).show();
                     });
+
+                    // Đóng executor sau khi công việc đã hoàn thành
+                    executor.shutdown();
                 });
 
                 return true;
             }
+
 
 
             return false;
@@ -291,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 return true;
             }
         });
+        loadImagesFromStorage();
     }
 
     @Override
@@ -455,35 +465,31 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
     }
 
     private void checkAndRequestPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
-            // Yêu cầu quyền READ_MEDIA_IMAGES
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_STORAGE_PERMISSION);
             } else {
                 loadImagesFromStorage();
             }
-
-            // Kiểm tra quyền xóa ảnh toàn bộ bộ nhớ (MANAGE_EXTERNAL_STORAGE)
-            if (!Environment.isExternalStorageManager()) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                intent.setData(Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, REQUEST_MANAGE_STORAGE_PERMISSION); // Bạn nên định nghĩa hằng số này
-            }
-
-        } else { // Trước Android 13
+        } else {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
             } else {
                 loadImagesFromStorage();
             }
-
-            // Kiểm tra quyền MANAGE_EXTERNAL_STORAGE nếu Android >= 11
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+        }
+    }
+    private boolean checkDeletePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Toast.makeText(this, "Yêu cầu cấp quyền truy cập toàn bộ bộ nhớ để xóa ảnh", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 intent.setData(Uri.parse("package:" + getPackageName()));
                 startActivityForResult(intent, REQUEST_MANAGE_STORAGE_PERMISSION);
+                return false;
             }
         }
+        return true;
     }
 
 
@@ -793,13 +799,8 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 break;
 
             case "delete":
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    if (!Environment.isExternalStorageManager()) {
-                        Uri uri = Uri.parse("package:" + getPackageName());
-                        Toast.makeText(this, "Yêu cầu cấp quyền truy cập toàn bộ bộ nhớ", Toast.LENGTH_SHORT).show();
-                        startActivityForResult(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri), 2);
-                        break;
-                    }
+                if (!checkDeletePermission()) {
+                    break;
                 }
 
                 String imagePath = imageList.get(index).getImageID();
