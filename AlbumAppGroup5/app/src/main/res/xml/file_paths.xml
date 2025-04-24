@@ -1,5 +1,14 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-files-path name="images" path="Pictures/" />
-</paths>
+    <!-- Trường hợp ảnh nằm trong thư mục riêng của app -->
+    <external-files-path name="app_images" path="Pictures/" />
 
+    <!-- Trường hợp ảnh nằm trong bộ nhớ ngoài (ví dụ DCIM, Download, v.v.) -->
+    <external-path name="external" path="." />
+
+    <!-- (Tùy chọn) Trường hợp ảnh nằm trong bộ nhớ trong của app -->
+    <files-path name="internal" path="." />
+
+    <!-- (Tùy chọn) Nếu ảnh lưu trong cache -->
+    <cache-path name="cache" path="." />
+</paths>

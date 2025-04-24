@@ -33,6 +33,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.annotation.NonNull;
@@ -899,11 +900,56 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                     findViewById(R.id.bottom_navigation).setVisibility(View.GONE);
                 }
                 break;
+            case "shareImage":
+                ImageDetailsObject shareImage = imageList.get(index); // Get the clicked image
+
+                // Check if image has password protection
+                if (shareImage.isPasswordProtected()) {
+                    passwordCheckAsync(index)
+                            .thenAccept(ok -> {
+                                runOnUiThread(() -> {
+                                    if (ok) {
+                                        shareImage(shareImage.getImageID()); // Call the share method
+                                    } else {
+                                        Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            });
+                } else {
+                    shareImage(shareImage.getImageID()); // Call the share method
+                }
+                break;
+
             default:
                 break;
         }
     }
+    // Method to share image
+    private void shareImage(String imagePath) {
+        try {
+            // Tạo file từ đường dẫn ảnh
+            File imageFile = new File(imagePath);
+            if (imageFile.exists()) {
+                Uri imageUri = FileProvider.getUriForFile(this, "com.example.albumappgroup5.fileprovider", imageFile);
 
+                // Tạo một Intent chia sẻ
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("image/*"); // Chỉ định loại dữ liệu là ảnh
+                shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri); // Đính kèm ảnh vào Intent
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // Cung cấp quyền đọc URI cho các ứng dụng khác
+
+                // Mở hộp thoại chia sẻ
+                Intent chooserIntent = Intent.createChooser(shareIntent, "Chia sẻ ảnh qua...");
+                startActivity(chooserIntent);
+            } else {
+                Toast.makeText(this, "Ảnh không tồn tại", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e("ShareImage", "Error sharing image: ", e);
+            Toast.makeText(this, "Lỗi khi chia sẻ ảnh", Toast.LENGTH_SHORT).show();
+        }
+
+    }
     @Override
     public void receiveMessage(String message) {
         switch (message)

@@ -10,7 +10,7 @@
     <string name="viewDetails">View details</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
-
+    <string name="shareImage">Share</string>
     <!-- app settings -->
     <string name="appearance">Appearance</string>
     <string-array name="appearanceOptions">

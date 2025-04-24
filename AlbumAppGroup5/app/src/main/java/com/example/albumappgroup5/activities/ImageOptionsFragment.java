@@ -54,6 +54,7 @@ public class ImageOptionsFragment extends Fragment implements OptionsFragmentCal
         LinearLayout cancelOption = view.findViewById(R.id.cancelOption);
         LinearLayout setWallpaperOption = view.findViewById(R.id.setWallpaperOption);
         LinearLayout editImageOption = view.findViewById(R.id.editImageOption);
+        LinearLayout shareOption = view.findViewById(R.id.shareImageOption);
 
         setWallpaperOption.setOnClickListener(v -> {
             main.selectOption(itemAffected, "setWallpaper");
@@ -70,6 +71,9 @@ public class ImageOptionsFragment extends Fragment implements OptionsFragmentCal
         });
         cancelOption.setOnClickListener(v -> {
             main.selectOption(itemAffected, "cancel");
+        });
+        shareOption.setOnClickListener(v -> {
+            main.selectOption(itemAffected, "shareImage");
         });
         return view;
     }
