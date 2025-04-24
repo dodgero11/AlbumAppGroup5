@@ -66,6 +66,7 @@ import java.util.Locale;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements GalleryAdapter.OnImageClickListener, ImageActivityCallback, SimpleMessageCallback {
@@ -243,6 +244,22 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                 showSortingDialog();
                 return true;
             }
+            if (id == R.id.action_deleteDuplicate) {
+                // Chạy hàm deleteDuplicateImages trên background thread
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                executor.execute(() -> {
+                    deleteDuplicateImages();
+
+                    // Cập nhật lại UI sau khi hoàn thành thao tác xóa ảnh
+                    runOnUiThread(() -> {
+                        loadImagesFromStorage();  // Tải lại hình ảnh sau khi đã xóa
+                        Toast.makeText(this, "Duplicate images deleted.", Toast.LENGTH_SHORT).show();
+                    });
+                });
+
+                return true;
+            }
+
 
             return false;
         });
@@ -518,36 +535,36 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
                     timeAddedDate = new Date();
                 }
 
-                String imageHash = getImageHash(imagePath);
-
-                if (hashSet.contains(imageHash)) {
-                    Log.d("Duplicates", "Duplicate found: " + imagePath);
-                }
-                else {
-                    hashSet.add(imageHash);
-
-//                     Create image object
+//                String imageHash = getImageHash(imagePath);
+//
+//                if (hashSet.contains(imageHash)) {
+//                    Log.d("Duplicates", "Duplicate found: " + imagePath);
+//                }
+//                else {
+//                    hashSet.add(imageHash);
+//
+////                     Create image object
                     ImageDetailsObject tempImage = new ImageDetailsObject(imagePath, imageName, null, timeAddedDate, imagePath);
-
-                    // Check if image password exists in database
-                    String tempPassword = database.getImagePassword(tempImage.getImageID());
-
-                    // If it exists, use password info from database
-                    if (!tempPassword.equals("")) {
-                        tempImage.setHasPassword(true);
-                        tempImage.setPasswordProtected(true);
-                        // Don't set the actual password - that stays in the database
-                    } else {
-                        // Insert as new image if it doesn't exist
-                        try {
-                            database.insertImage(tempImage);
-                        } catch (Exception e) {
-                            Log.e("error", e.toString());
-                        }
-                    }
-
+//
+//                    // Check if image password exists in database
+//                    String tempPassword = database.getImagePassword(tempImage.getImageID());
+//
+//                    // If it exists, use password info from database
+//                    if (!tempPassword.equals("")) {
+//                        tempImage.setHasPassword(true);
+//                        tempImage.setPasswordProtected(true);
+//                        // Don't set the actual password - that stays in the database
+//                    } else {
+//                        // Insert as new image if it doesn't exist
+//                        try {
+//                            database.insertImage(tempImage);
+//                        } catch (Exception e) {
+//                            Log.e("error", e.toString());
+//                        }
+//                    }
+//
                     imageList.add(tempImage);
-                }
+//                }
             }
             cursor.close();
         }
@@ -557,6 +574,69 @@ public class MainActivity extends AppCompatActivity implements GalleryAdapter.On
 
         adapter = new GalleryAdapter(this, imageList, this);
         recyclerView.setAdapter(adapter);
+    }
+    private void deleteDuplicateImages() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Uri uri = Uri.parse("package:" + getPackageName());
+                Toast.makeText(this, "Yêu cầu cấp quyền truy cập toàn bộ bộ nhớ", Toast.LENGTH_LONG).show();
+                startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri));
+                return;
+            }
+        }
+
+        HashSet<String> hashSet = new HashSet<>();
+        Uri collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        String[] projection = {
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATA
+        };
+
+        ContentResolver contentResolver = getContentResolver();
+        Cursor cursor = contentResolver.query(collection, projection, null, null, null);
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String imagePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+
+                String imageHash = getImageHash(imagePath);  // Hàm tạo mã băm cho ảnh
+
+                if (hashSet.contains(imageHash)) {
+                    // Nếu ảnh trùng, tiến hành xoá
+                    Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    boolean deleted = false;
+
+                    // 1. Xoá ảnh từ MediaStore (an toàn nhất)
+                    int rows = contentResolver.delete(imageUri, null, null);
+                    deleted = rows > 0;
+
+                    // 2. Nếu chưa xoá được từ MediaStore, thử xoá trực tiếp
+                    if (!deleted) {
+                        File file = new File(imagePath);
+                        if (file.exists() && file.delete()) {
+                            MediaScannerConnection.scanFile(this, new String[]{imagePath}, null, null);
+                            deleted = true;
+                        }
+                    }
+
+                    // 3. Nếu xóa thành công, cập nhật lại database và UI
+                    if (deleted) {
+                        database.deleteImage(imagePath);
+                        Log.d("Deleted", "Deleted duplicate: " + imagePath);
+                    } else {
+                        Log.w("Delete Failed", "Không thể xoá ảnh: " + imagePath);
+                    }
+
+                } else {
+                    hashSet.add(imageHash);
+                }
+            }
+            cursor.close();
+        }
+
+        // Hoàn tất xóa và thông báo cho người dùng
+        Log.d("DeleteDuplicate", "All duplicate images processed.");
     }
 
     // New method to sort the imageList

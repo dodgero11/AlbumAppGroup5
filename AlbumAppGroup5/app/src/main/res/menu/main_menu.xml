@@ -6,4 +6,8 @@
         android:icon="@drawable/ic_sort"
         android:title="@string/actionSort"
         app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_deleteDuplicate"
+        android:title="Delete Duplicate"
+        app:showAsAction="always"/>
 </menu>
