@@ -16,6 +16,7 @@ import com.example.albumappgroup5.R;
 import com.example.albumappgroup5.adapters.GalleryAdapter;
 import com.example.albumappgroup5.models.ImageDetailsObject;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +32,6 @@ public class ImageSearchFragment extends Fragment {
     // Filtered images as query changes.
     private List<ImageDetailsObject> filteredImages;
     private DatabaseHandler database;
-
     public static ImageSearchFragment newInstance() {
         ImageSearchFragment fragment = new ImageSearchFragment();
         Bundle args = new Bundle();
@@ -73,6 +73,8 @@ public class ImageSearchFragment extends Fragment {
 
         // Load all images
         filteredImages.addAll(database.getAllImages());
+        // Now sort the filteredImage based on the selected sort order
+        sortfilteredImages();
         adapter.notifyDataSetChanged();
 
         // Setup SearchView query change listener
@@ -124,5 +126,18 @@ public class ImageSearchFragment extends Fragment {
         Bundle result = new Bundle();
         result.putBoolean("refresh_images", true);
         getParentFragmentManager().setFragmentResult("image_search_closed", result);
+    }
+
+    // New method to sort the filteredImage
+    private void sortfilteredImages() {
+        // Update all images' names to match database
+        for (ImageDetailsObject image : filteredImages) {
+            image.setImageName(database.getImageName(image.getImageID()));
+        }
+        Collections.sort(filteredImages, (img1, img2) -> {
+            if (img1.getTimeAdded() == null || img2.getTimeAdded() == null)
+                return 0;
+            return img2.getTimeAdded().compareTo(img1.getTimeAdded());
+        });
     }
 }

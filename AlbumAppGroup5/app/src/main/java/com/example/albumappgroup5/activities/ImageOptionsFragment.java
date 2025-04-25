@@ -1,6 +1,7 @@
 package com.example.albumappgroup5.activities;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +56,15 @@ public class ImageOptionsFragment extends Fragment implements OptionsFragmentCal
         LinearLayout setWallpaperOption = view.findViewById(R.id.setWallpaperOption);
         LinearLayout editImageOption = view.findViewById(R.id.editImageOption);
         LinearLayout shareOption = view.findViewById(R.id.shareImageOption);
+        LinearLayout optionsLayout = view.findViewById(R.id.optionsLayout);
+
+        // Change background color
+        SharedPreferences preferences = getActivity().getSharedPreferences(Global.SETTINGS, Activity.MODE_PRIVATE);
+        if (preferences != null && preferences.getBoolean(Global.SETTINGS_NIGHT, false)) {
+            optionsLayout.setBackgroundColor(getResources().getColor(R.color.black));
+        } else {
+            optionsLayout.setBackgroundColor(getResources().getColor(R.color.white));
+        }
 
         setWallpaperOption.setOnClickListener(v -> {
             main.selectOption(itemAffected, "setWallpaper");
