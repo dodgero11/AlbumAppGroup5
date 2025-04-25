@@ -153,6 +153,7 @@ public class AlbumCollectionFragment extends Fragment implements AlbumAdapter.On
     }
 
     public void openAlbum(String albumName) {
+        getActivity().findViewById(R.id.bottom_navigation).setVisibility(View.GONE);
         List<ImageDetailsObject> images = albumModel.getAlbumImages().getOrDefault(albumName, new ArrayList<>()); // Get images for album
 
         // Pass both album name and image list
